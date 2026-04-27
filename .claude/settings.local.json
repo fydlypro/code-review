@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l \"/Users/mathysguena/Desktop/FYDLYV2/src/components/ui\"/*.tsx)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(vercel --prod)",
+      "Edit",
+      "Write",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__d2273418-1a67-4f27-ad13-bc2278adef88__list_projects",
+      "mcp__d2273418-1a67-4f27-ad13-bc2278adef88__execute_sql",
+      "mcp__d2273418-1a67-4f27-ad13-bc2278adef88__apply_migration",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

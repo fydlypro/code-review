@@ -1,0 +1,189 @@
+/* Fonts chargées via <link> dans index.html pour éviter le blocage CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-blue-50 text-blue-900;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-fydly-700 font-medium transition-all duration-200 hover:bg-fydly-50 hover:text-fydly-900;
+  }
+  
+  .nav-item-active {
+    @apply bg-fydly-500 text-white shadow-card hover:bg-fydly-600 hover:text-white;
+  }
+
+  .font-serif {
+    font-family: 'DM Serif Display', serif;
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    @apply bg-fydly-100 animate-pulse rounded-md;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 300ms ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-bounce-stamp {
+    animation: bounceStamp 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+}
+
+.toast-container {
+  @apply fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 w-[min(calc(100%-32px),400px)];
+}
+
+.toast-base {
+  @apply flex items-center gap-4 p-4 rounded-xl shadow-modal text-sm font-semibold transition-all duration-300;
+}
+
+.toast-success {
+  @apply toast-base bg-success-light text-success border border-success/10;
+}
+
+.toast-error {
+  @apply toast-base bg-error-light text-error border border-error/10;
+}
+
+.toast-info {
+  @apply toast-base bg-fydly-50 text-fydly-800 border border-fydly-100;
+}
+
+/* ─── Safe Area (iPhone notch + home indicator) ─── */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* ─── Touch / Mobile UX improvements ─── */
+html {
+  /* Prevent zoom on double-tap on iOS */
+  touch-action: manipulation;
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent horizontal overflow globally */
+body {
+  overflow-x: hidden;
+}
+
+/* Active state for all tappable elements without explicit active styles */
+button:active:not(:disabled),
+a:active {
+  opacity: 0.85;
+}
+
+/* Hide scrollbar utility (used on filter tabs) */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── Bottom nav safe area padding ─── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Custom Webkit Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #BBDEFB;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #90CAF9;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+@keyframes bounceStamp {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Accessibilité : désactive les animations pour les utilisateurs sensibles au mouvement */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Performance : optimise les éléments animés fréquemment */
+.animate-fade-in,
+.animate-slide-up,
+.animate-bounce-stamp {
+  will-change: transform, opacity;
+}
+
+/* ─── Scanner QR (ScanPage) ─── */
+#reader video {
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+#reader > div, #reader img, #reader canvas { display: none !important; }
+#reader video { display: block !important; }
+
+@keyframes scan {
+  0%   { top: 0%;   opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-scan {
+  animation: scan 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  position: absolute;
+}

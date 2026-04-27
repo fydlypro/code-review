@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/rotate-qr-tokens",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/expire-rewards",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/notify-inactive",
+      "schedule": "0 10 * * *"
+    }
+  ]
+}
