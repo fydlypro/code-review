@@ -65,22 +65,33 @@ serve(async (req: Request) => {
 
     console.log(`[stripe-webhook] Événement reçu: ${event.type}`);
 
+    const proPriceId = Deno.env.get("STRIPE_PRO_PRICE_ID") ?? "";
+    const businessPriceId = Deno.env.get("STRIPE_BUSINESS_PRICE_ID") ?? "";
+
+    function getPlanFromPriceId(priceId: string): "pro" | "business" {
+      return priceId === businessPriceId ? "business" : "pro";
+    }
+
     switch (event.type) {
       // ── Abonnement créé ────────────────────────────────────────
       case "customer.subscription.created": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
+        const priceId = subscription.items.data[0]?.price?.id ?? "";
+
+        let status: string = getPlanFromPriceId(priceId);
+        if (subscription.status === "trialing") status = "trial";
 
         await supabase
           .from("merchants")
           .update({
-            subscription_status: "active",
+            subscription_status: status,
             stripe_subscription_id: subscription.id,
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_customer_id", customerId);
 
-        console.log(`[stripe-webhook] Abonnement créé pour customer ${customerId}`);
+        console.log(`[stripe-webhook] Abonnement créé pour customer ${customerId} → ${status}`);
         break;
       }
 
@@ -88,10 +99,23 @@ serve(async (req: Request) => {
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
+        const priceId = subscription.items.data[0]?.price?.id ?? "";
 
-        let status: "trial" | "active" | "expired" = "active";
-        if (subscription.status === "trialing") status = "trial";
-        else if (["canceled", "incomplete_expired", "unpaid", "past_due"].includes(subscription.status)) {
+        let status: string;
+        if (subscription.status === "trialing") {
+          status = "trial";
+        } else if (subscription.status === "active") {
+          status = getPlanFromPriceId(priceId);
+        } else if (["canceled", "incomplete_expired"].includes(subscription.status)) {
+          // Check previous status to distinguish trial expiry from cancellation
+          const { data: merchant } = await supabase
+            .from("merchants")
+            .select("subscription_status")
+            .eq("stripe_customer_id", customerId)
+            .single();
+          status = merchant?.subscription_status === "trial" ? "expired" : "cancelled";
+        } else {
+          // past_due, unpaid → expired
           status = "expired";
         }
 
@@ -108,20 +132,28 @@ serve(async (req: Request) => {
         break;
       }
 
-      // ── Abonnement annulé ──────────────────────────────────────
+      // ── Abonnement supprimé ────────────────────────────────────
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
+        const { data: merchant } = await supabase
+          .from("merchants")
+          .select("subscription_status")
+          .eq("stripe_customer_id", customerId)
+          .single();
+
+        const status = merchant?.subscription_status === "trial" ? "expired" : "cancelled";
+
         await supabase
           .from("merchants")
           .update({
-            subscription_status: "expired",
+            subscription_status: status,
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_customer_id", customerId);
 
-        console.log(`[stripe-webhook] Abonnement annulé pour customer ${customerId}`);
+        console.log(`[stripe-webhook] Abonnement supprimé pour customer ${customerId} → ${status}`);
         break;
       }
 
@@ -129,16 +161,19 @@ serve(async (req: Request) => {
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
+        const priceId = invoice.lines?.data?.[0]?.price?.id ?? "";
+
+        const status = getPlanFromPriceId(priceId);
 
         await supabase
           .from("merchants")
           .update({
-            subscription_status: "active",
+            subscription_status: status,
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_customer_id", customerId);
 
-        console.log(`[stripe-webhook] Paiement réussi pour customer ${customerId}`);
+        console.log(`[stripe-webhook] Paiement réussi pour customer ${customerId} → ${status}`);
         break;
       }
 

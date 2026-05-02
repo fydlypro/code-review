@@ -520,37 +520,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Gratuit */}
-            <div className="bg-white rounded-[20px] border border-blue-100 p-8 shadow-[0_2px_12px_rgba(25,118,210,0.10)] hover:shadow-[0_4px_20px_rgba(25,118,210,0.16)] transition-all">
-              <div className="mb-6">
-                <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Gratuit</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-display font-bold text-blue-900">0 €</span>
-                  <span className="text-blue-400 text-sm font-medium">/ mois</span>
-                </div>
-                <p className="text-blue-600/70 text-sm mt-2">Pour tester et démarrer</p>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  '1 programme de fidélité',
-                  'Jusqu\'à 100 clients',
-                  'QR Code personnalisé',
-                  'Statistiques de base',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-blue-700">
-                    <CheckCircle size={15} className="text-blue-400 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={() => navigate('/merchant/register')}
-                className="w-full py-3 rounded-btn border border-blue-200 text-blue-900 font-semibold text-sm hover:bg-blue-50 transition-colors active:scale-95"
-              >
-                Commencer gratuitement
-              </button>
-            </div>
-
             {/* Pro */}
             <div className="bg-blue-900 rounded-[20px] border border-blue-800 p-8 shadow-[0_8px_40px_rgba(25,118,210,0.25)] relative overflow-hidden">
               <div className="absolute top-4 right-4 px-3 py-1 bg-blue-500 rounded-full text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
@@ -559,18 +528,18 @@ export default function LandingPage() {
               <div className="mb-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Pro</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-display font-bold text-white">29 €</span>
+                  <span className="text-4xl font-display font-bold text-white">59,99 €</span>
                   <span className="text-white/40 text-sm font-medium">/ mois</span>
                 </div>
-                <p className="text-white/50 text-sm mt-2">Pour les commerçants ambitieux</p>
+                <p className="text-white/50 text-sm mt-2">30 jours gratuits — sans carte bancaire</p>
               </div>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Programmes illimités',
-                  'Clients illimités',
-                  'Notifications push',
-                  'Analytics avancés',
-                  'Support prioritaire',
+                  '1 établissement · clients illimités',
+                  'Notifications push illimitées',
+                  'Analytics complets + IA',
+                  'Segmentation clients (VIP / inactifs)',
+                  'Support email sous 48h',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-white/80">
                     <CheckCircle size={15} className="text-blue-400 flex-shrink-0" />
@@ -583,8 +552,40 @@ export default function LandingPage() {
                 className="w-full py-3 bg-white text-blue-900 hover:bg-blue-50 font-semibold text-sm active:scale-95"
                 variant="secondary"
               >
-                Essayer Pro — 14 jours offerts
+                Essayer gratuitement — 30 jours
               </Button>
+            </div>
+
+            {/* Business */}
+            <div className="bg-white rounded-[20px] border border-blue-100 p-8 shadow-[0_2px_12px_rgba(25,118,210,0.10)] hover:shadow-[0_4px_20px_rgba(25,118,210,0.16)] transition-all">
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Business</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-display font-bold text-blue-900">109,99 €</span>
+                  <span className="text-blue-400 text-sm font-medium">/ mois</span>
+                </div>
+                <p className="text-blue-600/70 text-sm mt-2">30 jours gratuits — sans carte bancaire</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Jusqu'à 5 établissements",
+                  'Dashboard centralisé multi-sites',
+                  'API accès + personnalisation',
+                  'Appel de lancement en visio (1h)',
+                  'WhatsApp direct avec le fondateur',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-blue-700">
+                    <CheckCircle size={15} className="text-blue-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => navigate('/merchant/register')}
+                className="w-full py-3 rounded-btn border border-blue-200 text-blue-900 font-semibold text-sm hover:bg-blue-50 transition-colors active:scale-95"
+              >
+                Essayer gratuitement — 30 jours
+              </button>
             </div>
           </div>
         </div>

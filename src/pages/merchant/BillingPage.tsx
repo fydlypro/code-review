@@ -1,313 +1,348 @@
 import { useState } from 'react'
-import { CreditCard, CheckCircle2, Zap, LayoutDashboard, ShieldCheck, ArrowRight, AlertTriangle, Star, Check, Sparkles, TrendingUp } from 'lucide-react'
+import { Check, AlertTriangle, CreditCard } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { redirectToCheckout, redirectToCustomerPortal } from '../../lib/stripe'
 
-// UI Components
-import Card from '../../components/ui/Card'
-import Badge from '../../components/ui/Badge'
-import Button from '../../components/ui/Button'
+type PlanSection = { sectionTitle: string }
+type PlanItem = string | PlanSection
 
-const PLANS = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 29,
-    description: 'Essentiel pour lancer votre programme de fidélité digital.',
-    color: 'fydly',
-    features: [
-      "Jusqu'à 200 clients",
-      '4 notifications push / mois',
-      'QR code dynamique',
-      'Dashboard temps réel',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 59,
-    description: 'La solution complète pour engager vos clients au quotidien.',
-    isPopular: true,
-    color: 'fydly',
-    features: [
-      "Jusqu'à 1 000 clients",
-      'Notifications push illimitées',
-      'Statistiques détaillées',
-      'Support prioritaire 7j/7',
-      'Relances automatiques',
-    ],
-  },
-  {
-    id: 'business',
-    name: 'Business',
-    price: 99,
-    description: 'Performance et puissance pour les commerces en pleine croissance.',
-    color: 'fydly',
-    features: [
-      'Clients illimités',
-      'Multi-établissements',
-      'Accès API',
-      'Accompagnement dédié',
-      'Marque blanche logicielle',
-    ],
-  },
+const PRO_FEATURES: PlanItem[] = [
+  { sectionTitle: 'Plateforme' },
+  '1 établissement',
+  'Clients illimités',
+  'QR code du jour — rotation automatique',
+  'Tampons et points illimités',
+  'Notifications push illimitées',
+  'Segmentation clients (actifs / inactifs / VIP)',
+  'Analytics complets (heatmap, évolution, heures d\'affluence)',
+  'Recommandations IA automatiques',
+  'Rapport mensuel par email',
+  'Export CSV clients',
+  'Récompenses automatiques',
+  'Score de fidélité Fydly',
+  'Historique des actions',
+  { sectionTitle: 'Accompagnement' },
+  'Documentation complète en français',
+  'Tutoriels vidéo pas à pas',
+  'Support email — réponse sous 48h',
+]
+
+const BUSINESS_FEATURES: PlanItem[] = [
+  { sectionTitle: 'Tout le plan Pro inclus' },
+  'Jusqu\'à 5 établissements',
+  'Dashboard centralisé multi-sites',
+  'Statistiques consolidées tous établissements',
+  'QR code unique par établissement',
+  'Notifications ciblées par établissement',
+  'Clients partagés entre établissements',
+  'Analyse comparative entre commerces',
+  'API accès',
+  'Export avancé (Excel, CSV, JSON)',
+  'Personnalisation couleurs et logo du programme',
+  'Tableau de bord équipe (3 utilisateurs max)',
+  'Accès anticipé nouvelles fonctionnalités',
+  { sectionTitle: 'Accompagnement personnalisé' },
+  'Appel de lancement en visio 1h avec Mathys',
+  'Audit mensuel du programme 30min/mois',
+  'Conseils stratégiques personnalisés',
+  'Rédaction des messages de notification par Mathys',
+  'Recommandations sur offres et récompenses',
+  'Rapport mensuel commenté par Mathys',
+  'Formation équipes si nécessaire',
 ]
 
 export default function BillingPage() {
   const { merchant } = useAuth()
   const toast = useToast()
-
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [loadingPortal, setLoadingPortal] = useState(false)
 
+  const daysLeft = (() => {
+    if (!merchant?.trial_ends_at) return 0
+    const diff = new Date(merchant.trial_ends_at).getTime() - Date.now()
+    return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)))
+  })()
+
+  const trialEndDate = merchant?.trial_ends_at
+    ? new Date(merchant.trial_ends_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : ''
+
+  const isTrial = merchant?.subscription_status === 'trial'
+  const isExpired = merchant?.subscription_status === 'expired' || merchant?.subscription_status === 'cancelled'
+  const hasActivePlan = merchant?.subscription_status === 'pro' || merchant?.subscription_status === 'business'
+
   const handleCheckout = async (planId: string) => {
+    if (!merchant?.id) return
     setLoadingPlan(planId)
-    setTimeout(() => {
-      toast.info(`Redirection vers Stripe Checkout...`)
+    const { error } = await redirectToCheckout(merchant.id, planId)
+    if (error) {
+      toast.error(error)
       setLoadingPlan(null)
-    }, 1500)
+    }
   }
 
   const handlePortal = async () => {
+    if (!merchant?.id) return
     setLoadingPortal(true)
-    setTimeout(() => {
-      toast.info('Ouverture du portail Stripe...')
+    const { error } = await redirectToCustomerPortal(merchant.id)
+    if (error) {
+      toast.error(error)
       setLoadingPortal(false)
-    }, 1000)
+    }
   }
-
-  const calculateDaysLeft = () => {
-    if (!merchant?.trial_ends_at) return 0
-    const diff = new Date(merchant.trial_ends_at).getTime() - new Date().getTime()
-    return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)))
-  }
-
-  const daysLeft = calculateDaysLeft()
-  const isTrial = merchant?.subscription_status === 'trial'
-  const isExpired = isTrial && daysLeft === 0
-
-  const currentPlan = PLANS.find(p => p.id === 'starter')
 
   return (
-    <div className="animate-fade-in pb-20 lg:pb-12 max-w-6xl mx-auto px-2 sm:px-0">
+    <div className="animate-fade-in pb-20 lg:pb-12" style={{ background: '#E3F2FD', minHeight: '100%' }}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-display text-fydly-900 leading-tight mb-1">Abonnement</h1>
-          <p className="text-fydly-400 font-medium text-sm">Gérez votre plan et accédez aux avantages Fydly.</p>
+        {/* ── Header ── */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-display text-blue-900 mb-2">
+            Choisissez votre plan
+          </h1>
+          <p className="text-blue-700 font-medium text-base">
+            30 jours gratuits sur tous les plans. Sans carte bancaire. Sans engagement.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Badge plan actif */}
-          {merchant?.subscription_status && merchant.subscription_status !== 'trial' && (
-            <div className="hidden sm:flex items-center gap-2 bg-fydly-50 border border-fydly-100 px-4 py-2 rounded-xl">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-xs font-bold text-fydly-700 uppercase tracking-widest">Plan actif</span>
-              <span className="text-xs font-bold text-fydly-500">{currentPlan?.name || 'Starter'}</span>
+
+        {/* ── Gestion abonnement actif ── */}
+        {hasActivePlan && (
+          <div className="mb-8 p-5 bg-white rounded-2xl border border-blue-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+              <div>
+                <p className="font-bold text-blue-900 text-sm">
+                  Plan {merchant?.subscription_status === 'business' ? 'Business' : 'Pro'} actif
+                </p>
+                <p className="text-blue-500 text-xs font-medium">Abonnement en cours</p>
+              </div>
             </div>
-          )}
-          {merchant?.subscription_status !== 'trial' && (
-            <Button
-              variant="secondary"
+            <button
               onClick={handlePortal}
               disabled={loadingPortal}
-              className="h-11 bg-white border-fydly-100 hover:border-fydly-300 text-sm shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 font-semibold text-sm hover:bg-blue-100 transition-colors disabled:opacity-60"
             >
-              {loadingPortal ? <span className="spinner" /> : (
-                <span className="flex items-center gap-2">
-                  <CreditCard size={16} />
-                  Gérer mon compte Stripe
-                </span>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* ── Status Banner ── */}
-      {isExpired ? (
-        <div className="mb-10 rounded-2xl bg-red-50 border border-red-200 p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6">
-          <div className="w-14 h-14 bg-red-500 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/20">
-            <AlertTriangle size={28} />
+              <CreditCard size={15} />
+              {loadingPortal ? 'Chargement...' : 'Gérer mon abonnement'}
+            </button>
           </div>
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-xl font-display text-fydly-900 mb-1">Période d'essai terminée</h2>
-            <p className="text-fydly-600 font-medium text-sm leading-relaxed">
-              Votre tableau de bord est repassé en lecture seule. Choisissez un plan ci-dessous pour réactiver votre programme et vos QR codes.
+        )}
+
+        {/* ── Bannière Trial ── */}
+        {isTrial && daysLeft > 0 && (
+          <div
+            className="mb-8 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            style={{ background: '#E3F2FD', border: '1.5px solid #2196F3' }}
+          >
+            <span className="text-2xl">🎉</span>
+            <p className="text-blue-900 font-medium text-sm leading-relaxed">
+              Vous êtes en <strong>période d'essai gratuite</strong>. Il vous reste{' '}
+              <strong>{daysLeft} jour{daysLeft > 1 ? 's' : ''}</strong>. Choisissez votre plan avant
+              le <strong>{trialEndDate}</strong> pour ne pas perdre vos données.
             </p>
           </div>
-          <Button
-            onClick={() => handleCheckout('pro')}
-            className="h-11 px-8 shrink-0 text-sm bg-fydly-500 hover:bg-fydly-600 text-white border-none shadow-md shadow-fydly-500/20"
-          >
-            <span className="flex items-center gap-2">Choisir un plan <ArrowRight size={16} /></span>
-          </Button>
-        </div>
-      ) : isTrial ? (
-        <div className="mb-10 rounded-2xl bg-fydly-900 text-white p-7 sm:p-10 relative overflow-hidden">
-          {/* Background glow */}
-          <div className="absolute -right-24 -bottom-24 w-72 h-72 bg-fydly-500/15 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute -left-12 -top-12 w-48 h-48 bg-white/3 rounded-full blur-[60px] pointer-events-none" />
+        )}
 
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+        {/* ── Bannière Expiré / Annulé ── */}
+        {isExpired && (
+          <div
+            className="mb-8 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-4"
+            style={{ background: '#FFEBEE', border: '1.5px solid #EF5350' }}
+          >
+            <AlertTriangle size={24} style={{ color: '#EF5350', flexShrink: 0 }} />
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 bg-fydly-500/20 text-fydly-300 border border-fydly-500/30 rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase">
-                  <Zap size={11} className="text-fydly-400 fill-current" />
-                  Essai gratuit
-                </span>
-                <span className="text-fydly-400 font-medium text-xs">Accès complet débloqué</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-display mb-3 leading-tight">
-                Maximisez vos {daysLeft} jours restants
-              </h2>
-              <p className="text-fydly-300 font-medium text-sm sm:text-base max-w-md leading-relaxed">
-                Votre test gratuit prend fin le{' '}
-                <strong className="text-white">
-                  {new Date(merchant.trial_ends_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
-                </strong>
-                . Choisissez votre plan dès maintenant pour une transition fluide.
+              <p className="text-red-900 font-semibold text-sm mb-0.5">
+                ⚠️ Votre période d'essai est terminée.
+              </p>
+              <p className="text-red-700 text-sm">
+                Choisissez un plan pour continuer à fidéliser vos clients.
               </p>
             </div>
-
-            <div className="bg-white/8 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-center min-w-[160px] shrink-0">
-              <div className="text-5xl font-display mb-1 leading-none">{daysLeft}</div>
-              <div className="text-[10px] font-bold text-fydly-400 uppercase tracking-[0.2em] mt-1">Jours restants</div>
-            </div>
+            <button
+              onClick={() => handleCheckout('pro')}
+              disabled={loadingPlan !== null}
+              className="shrink-0 px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 disabled:opacity-60"
+              style={{ background: '#EF5350' }}
+            >
+              {loadingPlan === 'pro' ? 'Chargement...' : 'Réactiver mon compte'}
+            </button>
           </div>
-        </div>
-      ) : null}
+        )}
 
-      {/* ── Pricing Grid ── */}
-      <div className="flex items-end justify-between mb-6">
-        <div>
-          <h2 className="text-lg font-display text-fydly-900 mb-1">Choisissez votre plan</h2>
-          <p className="text-xs text-fydly-400 font-medium">Sans engagement · Résiliable à tout moment depuis Stripe</p>
-        </div>
-        <div className="hidden sm:flex items-center gap-1.5 bg-green-50 border border-green-100 text-green-700 px-3 py-1.5 rounded-full">
-          <CheckCircle2 size={13} />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Paiement sécurisé Stripe</span>
-        </div>
-      </div>
+        {/* ── Cards Plans ── */}
+        <div className="grid sm:grid-cols-2 gap-6 mb-10">
 
-      <div className="grid sm:grid-cols-3 gap-6 items-stretch mb-16">
-        {PLANS.map((plan) => (
-          <Card
-            key={plan.id}
-            className={`flex flex-col relative transition-all duration-300 overflow-hidden ${
-              plan.isPopular
-                ? 'border-2 border-fydly-500 shadow-2xl shadow-fydly-500/10 lg:scale-[1.02] z-10'
-                : 'border border-fydly-100/70 hover:border-fydly-200 hover:shadow-card-hover shadow-card'
-            }`}
+          {/* ── Plan Pro ── */}
+          <div
+            className="bg-white flex flex-col rounded-2xl overflow-hidden"
+            style={{ boxShadow: '0 2px 12px rgba(25,118,210,0.10)' }}
           >
-            {/* Popular Badge */}
-            {plan.isPopular && (
-              <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-fydly-500 to-fydly-600 text-white py-2.5 text-center text-[10px] font-bold tracking-[0.2em] uppercase flex items-center justify-center gap-1.5">
-                <Sparkles size={11} />
-                RECOMMANDÉ PAR FYDLY
-              </div>
-            )}
+            {/* Badge */}
+            <div
+              className="py-2.5 text-center text-white text-xs font-bold uppercase tracking-widest"
+              style={{ background: '#2196F3' }}
+            >
+              Le plus populaire
+            </div>
 
-            <div className={`p-6 sm:p-8 flex flex-col flex-1 ${plan.isPopular ? 'pt-14' : ''}`}>
-              {/* Plan Name & Price */}
-              <div className="mb-7">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-display text-2xl text-fydly-900">{plan.name}</h3>
-                      {plan.isPopular && (
-                        <span className="inline-flex items-center gap-1 bg-fydly-500/10 text-fydly-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-fydly-200 uppercase tracking-widest">
-                          <Star size={9} className="fill-current" /> Best-seller
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-fydly-400 font-medium text-xs leading-relaxed max-w-[180px]">{plan.description}</p>
-                  </div>
+            <div className="p-6 sm:p-8 flex flex-col flex-1">
+              {/* Prix */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1.5 mb-1">
+                  <span className="text-5xl font-display text-blue-900 leading-none">59,99€</span>
+                  <span className="text-sm font-semibold text-blue-400">/mois</span>
                 </div>
-
-                <div className="flex items-baseline gap-1.5 mt-5 pb-5 border-b border-fydly-50">
-                  <span className="text-5xl font-display text-fydly-900 leading-none">{plan.price}€</span>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-fydly-400 uppercase tracking-widest leading-tight">/ mois</span>
-                    <span className="text-[10px] font-bold text-fydly-300 uppercase tracking-widest leading-tight">HT</span>
-                  </div>
-                </div>
+                <p className="text-blue-500 text-sm">Puis 59,99€/mois sans engagement</p>
               </div>
+
+              <hr className="border-blue-100 mb-6" />
 
               {/* Features */}
-              <ul className="space-y-3.5 flex-1 mb-8">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-fydly-700 font-medium">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                      plan.isPopular
-                        ? 'bg-fydly-500 text-white'
-                        : 'bg-fydly-100 text-fydly-500'
-                    }`}>
-                      <Check size={11} strokeWidth={3} />
-                    </div>
-                    <span className={plan.isPopular ? 'text-fydly-900 font-semibold' : ''}>{feature}</span>
-                  </li>
-                ))}
+              <ul className="flex-1 mb-8 space-y-0">
+                {PRO_FEATURES.map((item, i) =>
+                  typeof item !== 'string' ? (
+                    <li key={i} className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mt-5 mb-2 first:mt-0">
+                      {item.sectionTitle}
+                    </li>
+                  ) : (
+                    <li key={i} className="flex items-center gap-3 py-1.5">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                        style={{ background: '#2196F3' }}
+                      >
+                        <Check size={11} strokeWidth={3} className="text-white" />
+                      </div>
+                      <span className="text-sm text-blue-800 font-medium">{item}</span>
+                    </li>
+                  )
+                )}
               </ul>
 
               {/* CTA */}
-              <Button
-                onClick={() => handleCheckout(plan.id)}
+              <button
+                onClick={() => handleCheckout('pro')}
                 disabled={loadingPlan !== null}
-                className={`w-full h-13 py-3.5 rounded-xl text-base font-bold transition-all active:scale-95 ${
-                  plan.isPopular
-                    ? 'bg-fydly-500 text-white hover:bg-fydly-600 shadow-lg shadow-fydly-500/25 border-none'
-                    : 'bg-fydly-900 text-white hover:bg-fydly-700 border-none'
-                }`}
+                className="w-full py-3.5 rounded-xl text-white font-bold text-base transition-all active:scale-95 disabled:opacity-60"
+                style={{ background: '#2196F3' }}
               >
-                {loadingPlan === plan.id ? (
-                  <span className="spinner border-white" />
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    Activer le plan {plan.name}
-                    <ArrowRight size={16} />
-                  </span>
-                )}
-              </Button>
-              {plan.isPopular && (
-                <p className="text-center text-[10px] text-fydly-400 font-medium mt-3">
-                  30 jours satisfait ou remboursé
-                </p>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* ── Reassurance Footer ── */}
-      <div className="grid sm:grid-cols-3 gap-6 sm:gap-8 pt-10 border-t border-fydly-50">
-        {[
-          {
-            icon: ShieldCheck,
-            title: 'Paiement 100% sécurisé',
-            text: "Vos transactions sont chiffrées et traitées par Stripe. Nous n'avons jamais accès à vos coordonnées bancaires.",
-          },
-          {
-            icon: CreditCard,
-            title: 'Zéro engagement',
-            text: "Résiliez à tout moment depuis votre portail Stripe, sans frais ni préavis. Vous gardez le contrôle.",
-          },
-          {
-            icon: TrendingUp,
-            title: 'Technologie évolutive',
-            text: "Bénéficiez de toutes les mises à jour et nouvelles fonctionnalités sans surcoût. Votre outil s'améliore chaque semaine.",
-          },
-        ].map(({ icon: Icon, title, text }) => (
-          <div key={title} className="flex flex-col items-center text-center gap-4">
-            <div className="w-12 h-12 bg-fydly-50 rounded-xl flex items-center justify-center text-fydly-400">
-              <Icon size={24} />
-            </div>
-            <div>
-              <h4 className="font-display text-lg text-fydly-900 mb-1">{title}</h4>
-              <p className="text-xs text-fydly-400 font-medium leading-relaxed">{text}</p>
+                {loadingPlan === 'pro' ? 'Chargement...' : 'Démarrer 30 jours gratuits'}
+              </button>
             </div>
           </div>
-        ))}
+
+          {/* ── Plan Business ── */}
+          <div
+            className="bg-white flex flex-col rounded-2xl overflow-hidden"
+            style={{ boxShadow: '0 2px 12px rgba(25,118,210,0.10)' }}
+          >
+            {/* Badge */}
+            <div
+              className="py-2.5 text-center text-white text-xs font-bold uppercase tracking-widest"
+              style={{ background: '#0D47A1' }}
+            >
+              Accompagnement personnalisé
+            </div>
+
+            <div className="p-6 sm:p-8 flex flex-col flex-1">
+              {/* Prix */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1.5 mb-1">
+                  <span className="text-5xl font-display text-blue-900 leading-none">109,99€</span>
+                  <span className="text-sm font-semibold text-blue-400">/mois</span>
+                </div>
+                <p className="text-blue-500 text-sm">Puis 109,99€/mois sans engagement</p>
+              </div>
+
+              <hr className="border-blue-100 mb-6" />
+
+              {/* Features */}
+              <ul className="flex-1 mb-6 space-y-0">
+                {BUSINESS_FEATURES.map((item, i) => {
+                  if (typeof item !== 'string') {
+                    const isPersonal = item.sectionTitle === 'Accompagnement personnalisé'
+                    return (
+                      <li
+                        key={i}
+                        className={`text-[10px] font-bold uppercase tracking-widest mt-5 mb-2 first:mt-0 ${
+                          isPersonal ? 'text-[#0D47A1]' : 'text-blue-400'
+                        }`}
+                      >
+                        {item.sectionTitle}
+                        {isPersonal && (
+                          <span className="ml-2 text-[9px] bg-blue-900 text-white px-1.5 py-0.5 rounded-full normal-case tracking-normal font-semibold">
+                            La vraie différence
+                          </span>
+                        )}
+                      </li>
+                    )
+                  }
+
+                  // Mise en évidence des items d'accompagnement personnalisé (après l'index de la section)
+                  const personalSectionIdx = BUSINESS_FEATURES.findIndex(
+                    f => typeof f !== 'string' && f.sectionTitle === 'Accompagnement personnalisé'
+                  )
+                  const isPersonalItem = i > personalSectionIdx
+
+                  return (
+                    <li key={i} className="flex items-center gap-3 py-1.5">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                        style={{ background: isPersonalItem ? '#0D47A1' : '#90CAF9' }}
+                      >
+                        <Check size={11} strokeWidth={3} className="text-white" />
+                      </div>
+                      <span
+                        className={`text-sm font-medium ${isPersonalItem ? 'text-blue-900 font-semibold' : 'text-blue-800'}`}
+                      >
+                        {item}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              {/* Encadré WhatsApp */}
+              <div
+                className="rounded-xl p-4 mb-6 flex items-start gap-3"
+                style={{ background: '#E3F2FD', border: '1.5px solid #0D47A1' }}
+              >
+                <span className="text-xl flex-shrink-0">✉️</span>
+                <p className="text-blue-900 text-sm font-semibold leading-snug">
+                  Accès WhatsApp direct avec Mathys, fondateur de Fydly.{' '}
+                  <span className="font-bold" style={{ color: '#0D47A1' }}>
+                    Réponse garantie sous 4h.
+                  </span>
+                </p>
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={() => handleCheckout('business')}
+                disabled={loadingPlan !== null}
+                className="w-full py-3.5 rounded-xl text-white font-bold text-base transition-all active:scale-95 disabled:opacity-60"
+                style={{ background: '#0D47A1' }}
+              >
+                {loadingPlan === 'business' ? 'Chargement...' : 'Démarrer 30 jours gratuits'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Badges réassurance ── */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+          {[
+            { emoji: '🔒', text: 'Sans carte bancaire pendant 30 jours' },
+            { emoji: '↩️', text: 'Résiliable à tout moment' },
+            { emoji: '🇫🇷', text: 'Support en français' },
+          ].map(({ emoji, text }) => (
+            <div key={text} className="flex items-center gap-2 text-blue-700 text-sm font-semibold">
+              <span className="text-base">{emoji}</span>
+              <span>{text}</span>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   )

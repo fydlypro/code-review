@@ -11,13 +11,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Plan to Price ID mapping
-// In a real app, these should be from env variables too.
-const PRICE_IDS: Record<string, string> = {
-  starter: "price_starter", // À remplacer par les vrais ID
-  pro: "price_pro",
-  business: "price_business",
-};
+function getPriceId(planId: string): string | null {
+  if (planId === "pro") return Deno.env.get("STRIPE_PRO_PRICE_ID") ?? null;
+  if (planId === "business") return Deno.env.get("STRIPE_BUSINESS_PRICE_ID") ?? null;
+  return null;
+}
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -33,9 +31,9 @@ serve(async (req: Request) => {
     });
   }
 
-  const priceId = PRICE_IDS[plan_id];
+  const priceId = getPriceId(plan_id);
   if (!priceId) {
-    return new Response(JSON.stringify({ error: "Plan inconnu" }), {
+    return new Response(JSON.stringify({ error: "Plan inconnu ou Price ID non configuré" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -88,9 +86,14 @@ serve(async (req: Request) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
+      payment_method_collection: "if_required",
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 30,
+        trial_settings: { end_behavior: { missing_payment_method: "cancel" } },
+      },
       success_url,
       cancel_url,
       client_reference_id: merchant_id,

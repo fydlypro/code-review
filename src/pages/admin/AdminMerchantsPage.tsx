@@ -10,14 +10,14 @@ type MerchantRow = {
   id: string
   name: string
   sector: string | null
-  subscription_status: 'trial' | 'active' | 'expired'
+  subscription_status: 'trial' | 'pro' | 'business' | 'expired' | 'cancelled'
   trial_ends_at: string
   stripe_subscription_id: string | null
   created_at: string
   nb_clients: number
 }
 
-type FilterStatus = 'all' | 'trial' | 'active' | 'expired'
+type FilterStatus = 'all' | 'trial' | 'pro' | 'business' | 'expired'
 
 export default function AdminMerchantsPage() {
   const navigate = useNavigate()
@@ -50,15 +50,17 @@ export default function AdminMerchantsPage() {
   }
 
   const counts = useMemo(() => ({
-    all:     merchants.length,
-    trial:   merchants.filter(m => m.subscription_status === 'trial').length,
-    active:  merchants.filter(m => m.subscription_status === 'active').length,
-    expired: merchants.filter(m => m.subscription_status === 'expired').length,
+    all:      merchants.length,
+    trial:    merchants.filter(m => m.subscription_status === 'trial').length,
+    pro:      merchants.filter(m => m.subscription_status === 'pro').length,
+    business: merchants.filter(m => m.subscription_status === 'business').length,
+    expired:  merchants.filter(m => m.subscription_status === 'expired' || m.subscription_status === 'cancelled').length,
   }), [merchants])
 
   const filtered = useMemo(() => {
     let list = merchants
-    if (filter !== 'all') list = list.filter(m => m.subscription_status === filter)
+    if (filter === 'expired') list = list.filter(m => m.subscription_status === 'expired' || m.subscription_status === 'cancelled')
+    else if (filter !== 'all') list = list.filter(m => m.subscription_status === filter)
     if (search) {
       const q = search.toLowerCase()
       list = list.filter(m => m.name.toLowerCase().includes(q) || m.sector?.toLowerCase().includes(q))
@@ -71,7 +73,9 @@ export default function AdminMerchantsPage() {
   }
 
   const statusBadge = (m: MerchantRow) => {
-    if (m.subscription_status === 'active') return <Badge variant="success" dot>Actif</Badge>
+    if (m.subscription_status === 'pro')       return <Badge variant="success" dot>Pro</Badge>
+    if (m.subscription_status === 'business')  return <Badge variant="success" dot>Business</Badge>
+    if (m.subscription_status === 'cancelled') return <Badge variant="warning" dot>Annulé</Badge>
     if (m.subscription_status === 'trial') {
       const d = trialDaysLeft(m.trial_ends_at)
       return (
@@ -91,10 +95,11 @@ export default function AdminMerchantsPage() {
   }
 
   const filters: { key: FilterStatus; label: string }[] = [
-    { key: 'all',     label: 'Tous' },
-    { key: 'trial',   label: 'Trial' },
-    { key: 'active',  label: 'Actifs' },
-    { key: 'expired', label: 'Expirés' },
+    { key: 'all',      label: 'Tous' },
+    { key: 'trial',    label: 'Trial' },
+    { key: 'pro',      label: 'Pro' },
+    { key: 'business', label: 'Business' },
+    { key: 'expired',  label: 'Expirés' },
   ]
 
   return (

@@ -79,7 +79,12 @@ export default function MerchantLayout() {
               <div className="min-w-0">
                 <p className="text-sm font-bold text-fydly-900 truncate leading-tight">{merchant.name}</p>
                 <p className="text-[10px] font-medium text-fydly-400 uppercase tracking-wider mt-0.5">
-                  {merchant.subscription_status === 'trial' ? 'Essai gratuit' : 'Pro'}
+                  {merchant.subscription_status === 'trial' ? 'Essai gratuit'
+                    : merchant.subscription_status === 'business' ? 'Plan Business'
+                    : merchant.subscription_status === 'pro' ? 'Plan Pro'
+                    : merchant.subscription_status === 'expired' ? 'Expiré'
+                    : merchant.subscription_status === 'cancelled' ? 'Annulé'
+                    : 'Plan Pro'}
                 </p>
               </div>
             </div>
@@ -231,7 +236,12 @@ export default function MerchantLayout() {
                     <div>
                       <p className="font-bold text-fydly-900 text-sm leading-tight">{merchant.name}</p>
                       <p className="text-[10px] font-medium text-fydly-400 uppercase tracking-wider mt-0.5">
-                        {merchant.subscription_status === 'trial' ? 'Essai gratuit' : 'Compte Pro'}
+                        {merchant.subscription_status === 'trial' ? 'Essai gratuit'
+                          : merchant.subscription_status === 'business' ? 'Plan Business'
+                          : merchant.subscription_status === 'pro' ? 'Plan Pro'
+                          : merchant.subscription_status === 'expired' ? 'Expiré'
+                          : merchant.subscription_status === 'cancelled' ? 'Annulé'
+                          : 'Plan Pro'}
                       </p>
                     </div>
                   </>

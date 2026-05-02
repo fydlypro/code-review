@@ -123,7 +123,7 @@ export default function AdminMerchantDetailPage() {
     setConfirmModal(m => ({ ...m, open: false }))
   }
 
-  const setStatus = async (status: 'trial' | 'active' | 'expired') => {
+  const setStatus = async (status: 'trial' | 'pro' | 'business' | 'expired' | 'cancelled') => {
     if (!merchant) return
     setActionLoading(true)
     const { error } = await supabase
@@ -151,8 +151,10 @@ export default function AdminMerchantDetailPage() {
     Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)
 
   const statusBadge = (status: string) => {
-    if (status === 'active')  return <Badge variant="success">Actif</Badge>
-    if (status === 'trial')   return <Badge variant="default">Trial</Badge>
+    if (status === 'pro')       return <Badge variant="success">Pro</Badge>
+    if (status === 'business')  return <Badge variant="success">Business</Badge>
+    if (status === 'trial')     return <Badge variant="default">Trial</Badge>
+    if (status === 'cancelled') return <Badge variant="warning">Annulé</Badge>
     return <Badge variant="warning">Expiré</Badge>
   }
 
@@ -301,15 +303,28 @@ export default function AdminMerchantDetailPage() {
             <Button
               variant="secondary"
               isLoading={actionLoading}
-              disabled={merchant.subscription_status === 'active'}
+              disabled={merchant.subscription_status === 'pro'}
               onClick={() => askConfirm(
-                'Passer en Actif',
-                'L\'abonnement sera marqué comme actif sans paiement Stripe.',
-                () => setStatus('active')
+                'Passer en Pro',
+                'L\'abonnement sera marqué comme Pro sans paiement Stripe.',
+                () => setStatus('pro')
               )}
             >
               <CheckCircle size={15} className="mr-1.5 text-green-500" />
-              Activer
+              Activer Pro
+            </Button>
+            <Button
+              variant="secondary"
+              isLoading={actionLoading}
+              disabled={merchant.subscription_status === 'business'}
+              onClick={() => askConfirm(
+                'Passer en Business',
+                'L\'abonnement sera marqué comme Business sans paiement Stripe.',
+                () => setStatus('business')
+              )}
+            >
+              <CheckCircle size={15} className="mr-1.5 text-blue-600" />
+              Activer Business
             </Button>
             <Button
               variant="secondary"

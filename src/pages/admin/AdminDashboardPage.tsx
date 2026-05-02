@@ -19,7 +19,7 @@ type RecentMerchant = {
   id: string
   name: string
   sector: string | null
-  subscription_status: 'trial' | 'active' | 'expired'
+  subscription_status: 'trial' | 'pro' | 'business' | 'expired' | 'cancelled'
   trial_ends_at: string
   created_at: string
   nb_clients: number
@@ -62,8 +62,8 @@ export default function AdminDashboardPage() {
     setStats({
       totalMerchants: merchants.length,
       trialMerchants: merchants.filter(m => m.subscription_status === 'trial').length,
-      activeMerchants: merchants.filter(m => m.subscription_status === 'active').length,
-      expiredMerchants: merchants.filter(m => m.subscription_status === 'expired').length,
+      activeMerchants: merchants.filter(m => m.subscription_status === 'pro' || m.subscription_status === 'business').length,
+      expiredMerchants: merchants.filter(m => m.subscription_status === 'expired' || m.subscription_status === 'cancelled').length,
       totalCustomers: customersRes.count || 0,
       totalTransactionsThisMonth: txRes.count || 0,
     })
@@ -87,8 +87,10 @@ export default function AdminDashboardPage() {
   }
 
   const statusBadge = (status: string) => {
-    if (status === 'active') return <Badge variant="success" dot>Actif</Badge>
-    if (status === 'trial')  return <Badge variant="info" dot>Trial</Badge>
+    if (status === 'pro')       return <Badge variant="success" dot>Pro</Badge>
+    if (status === 'business')  return <Badge variant="success" dot>Business</Badge>
+    if (status === 'trial')     return <Badge variant="info" dot>Trial</Badge>
+    if (status === 'cancelled') return <Badge variant="warning" dot>Annulé</Badge>
     return <Badge variant="warning" dot>Expiré</Badge>
   }
 

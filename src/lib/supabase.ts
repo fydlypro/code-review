@@ -26,7 +26,7 @@ export type Merchant = {
   program_type: "stamps" | "points";
   reward_threshold: number;
   reward_description: string | null;
-  subscription_status: "trial" | "active" | "expired";
+  subscription_status: "trial" | "pro" | "business" | "expired" | "cancelled";
   trial_ends_at: string;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
