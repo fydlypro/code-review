@@ -296,8 +296,8 @@ export default function MerchantLayout() {
       )}
 
       {/* ─── Contenu principal ─── */}
-      <main className="flex-1 min-w-0 lg:ml-64 pt-[60px] lg:pt-0 pb-[62px] lg:pb-0 min-h-screen flex flex-col">
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in">
+      <main className="flex-1 min-w-0 lg:ml-64 pt-[60px] lg:pt-0 pb-[62px] lg:pb-0 min-h-screen flex flex-col overflow-x-hidden">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in w-full min-w-0">
           <Outlet />
         </div>
       </main>

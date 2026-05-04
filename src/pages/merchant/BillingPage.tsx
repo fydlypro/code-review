@@ -108,7 +108,7 @@ export default function BillingPage() {
 
         {/* ── Gestion abonnement actif ── */}
         {hasActivePlan && (
-          <div className="mb-8 p-5 bg-white rounded-2xl border border-blue-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mb-8 p-5 bg-white rounded-2xl border border-blue-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
               <div>
@@ -121,7 +121,7 @@ export default function BillingPage() {
             <button
               onClick={handlePortal}
               disabled={loadingPortal}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 font-semibold text-sm hover:bg-blue-100 transition-colors disabled:opacity-60"
+              className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-blue-50 border border-blue-200 rounded-xl text-blue-700 font-semibold text-sm hover:bg-blue-100 transition-colors disabled:opacity-60 w-full sm:w-auto justify-center"
             >
               <CreditCard size={15} />
               {loadingPortal ? 'Chargement...' : 'Gérer mon abonnement'}
@@ -190,7 +190,7 @@ export default function BillingPage() {
               {/* Prix */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-1.5 mb-1">
-                  <span className="text-5xl font-display text-blue-900 leading-none">59,99€</span>
+                  <span className="text-3xl sm:text-5xl font-display text-blue-900 leading-none">59,99€</span>
                   <span className="text-sm font-semibold text-blue-400">/mois</span>
                 </div>
                 <p className="text-blue-500 text-sm">Puis 59,99€/mois sans engagement</p>
@@ -248,7 +248,7 @@ export default function BillingPage() {
               {/* Prix */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-1.5 mb-1">
-                  <span className="text-5xl font-display text-blue-900 leading-none">109,99€</span>
+                  <span className="text-3xl sm:text-5xl font-display text-blue-900 leading-none">109,99€</span>
                   <span className="text-sm font-semibold text-blue-400">/mois</span>
                 </div>
                 <p className="text-blue-500 text-sm">Puis 109,99€/mois sans engagement</p>

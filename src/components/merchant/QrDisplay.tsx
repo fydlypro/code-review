@@ -61,43 +61,62 @@ export default function QrDisplay({
       <div className="w-full h-1 bg-fydly-500" />
 
       {/* Header */}
-      <div className="w-full flex items-center justify-between px-6 pt-5 pb-4 border-b border-fydly-50">
+      <div className="w-full flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-fydly-50">
         <div>
-          <h3 className="font-display text-2xl text-fydly-900 leading-tight">QR Code</h3>
+          <h3 className="font-display text-xl sm:text-2xl text-fydly-900 leading-tight">QR Code du jour</h3>
           <p className="text-fydly-400 text-[10px] font-bold uppercase tracking-[2px] mt-0.5">
             À scanner par le client
           </p>
         </div>
         <button
           onClick={() => setIsFullscreen(true)}
-          className="w-10 h-10 rounded-2xl bg-fydly-50 hover:bg-fydly-100 flex items-center justify-center text-fydly-500 border border-fydly-100 transition-all active:scale-95"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-fydly-50 hover:bg-fydly-100 flex items-center justify-center text-fydly-500 border border-fydly-100 transition-all active:scale-95"
           title="Afficher en grand"
         >
-          <Maximize2 size={18} />
+          <Maximize2 size={16} />
         </button>
       </div>
 
       {/* QR Code frame */}
-      <div className="flex flex-col items-center gap-5 p-6 w-full">
-        <div className="relative">
+      <div className="flex flex-col items-center gap-4 sm:gap-5 p-4 sm:p-6 w-full">
+        <div className="relative w-full">
           {/* Outer decorative frame */}
-          <div className="p-3 bg-gradient-to-br from-fydly-50 to-white rounded-3xl border-2 border-fydly-100 shadow-card">
+          <div className="p-2.5 sm:p-3 bg-gradient-to-br from-fydly-50 to-white rounded-2xl sm:rounded-3xl border-2 border-fydly-100 shadow-card mx-auto" style={{ width: 'fit-content' }}>
             {/* Inner white area */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm">
-              <QRCodeSVG
-                value={url}
-                size={180}
-                level="H"
-                includeMargin={false}
-                imageSettings={{
-                  src: "/favicon.png",
-                  x: undefined,
-                  y: undefined,
-                  height: 36,
-                  width: 36,
-                  excavate: true,
-                }}
-              />
+            <div className="bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm">
+              {/* Responsive QR: smaller on mobile */}
+              <div className="hidden sm:block">
+                <QRCodeSVG
+                  value={url}
+                  size={180}
+                  level="H"
+                  includeMargin={false}
+                  imageSettings={{
+                    src: "/favicon.png",
+                    x: undefined,
+                    y: undefined,
+                    height: 36,
+                    width: 36,
+                    excavate: true,
+                  }}
+                />
+              </div>
+              <div className="sm:hidden">
+                <QRCodeSVG
+                  value={url}
+                  size={140}
+                  level="H"
+                  includeMargin={false}
+                  imageSettings={{
+                    src: "/favicon.png",
+                    x: undefined,
+                    y: undefined,
+                    height: 28,
+                    width: 28,
+                    excavate: true,
+                  }}
+                />
+              </div>
             </div>
           </div>
 

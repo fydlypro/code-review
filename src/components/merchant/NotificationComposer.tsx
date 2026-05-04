@@ -56,39 +56,42 @@ export default function NotificationComposer({
           <label className="text-xs font-bold text-fydly-500 uppercase tracking-widest ml-1">
             Segment Cible
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => setSegment('all')}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-1 ${
+              className={`flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl border-2 transition-all gap-1 min-h-[72px] ${
                 segment === 'all' 
                   ? 'border-fydly-500 bg-fydly-50 text-fydly-900' 
                   : 'border-fydly-100 bg-white text-fydly-400 hover:border-fydly-200'
               }`}
             >
-              <Users size={20} />
-              <span className="font-bold text-sm">Tous ({activeClientsCount + inactiveClientsCount})</span>
+              <Users size={16} className="shrink-0" />
+              <span className="font-bold text-[10px] sm:text-xs leading-tight text-center">Tous</span>
+              <span className="font-bold text-[10px] sm:text-xs leading-tight text-center opacity-70">({activeClientsCount + inactiveClientsCount})</span>
             </button>
             <button
               onClick={() => setSegment('active')}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-1 ${
+              className={`flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl border-2 transition-all gap-1 min-h-[72px] ${
                 segment === 'active' 
                   ? 'border-success bg-success-light text-success' 
                   : 'border-fydly-100 bg-white text-fydly-400 hover:border-fydly-200'
               }`}
             >
-              <Users size={20} />
-              <span className="font-bold text-sm">Actifs ({activeClientsCount})</span>
+              <Users size={16} className="shrink-0" />
+              <span className="font-bold text-[10px] sm:text-xs leading-tight text-center">Actifs</span>
+              <span className="font-bold text-[10px] sm:text-xs leading-tight text-center opacity-70">({activeClientsCount})</span>
             </button>
             <button
               onClick={() => setSegment('inactive')}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-1 ${
+              className={`flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl border-2 transition-all gap-1 min-h-[72px] ${
                 segment === 'inactive' 
                   ? 'border-warning-DEFAULT bg-warning-light text-warning-DEFAULT' 
                   : 'border-fydly-100 bg-white text-fydly-400 hover:border-fydly-200'
               }`}
             >
-              <AlertTriangle size={20} />
-              <span className="font-bold text-sm">Inactifs ({inactiveClientsCount})</span>
+              <AlertTriangle size={16} className="shrink-0" />
+              <span className="font-bold text-[10px] sm:text-xs leading-tight text-center">Inactifs</span>
+              <span className="font-bold text-[10px] sm:text-xs leading-tight text-center opacity-70">({inactiveClientsCount})</span>
             </button>
           </div>
         </div>

@@ -199,32 +199,29 @@ export default function CustomerDetailPage() {
   const threshold = merchant?.reward_threshold || 10
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-20 lg:pb-12 animate-fade-in">
+    <div className="space-y-6 sm:space-y-8 max-w-6xl mx-auto pb-20 lg:pb-12 animate-fade-in">
       {/* Navigation Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-        <div className="flex items-center gap-5">
+      <div className="flex justify-between items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-5 min-w-0">
           <button 
             onClick={() => navigate('/merchant/customers')}
-            className="w-12 h-12 rounded-2xl bg-white border border-fydly-100 text-fydly-900 flex items-center justify-center hover:bg-fydly-50 hover:border-fydly-200 transition-all shadow-sm group"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white border border-fydly-100 text-fydly-900 flex items-center justify-center hover:bg-fydly-50 hover:border-fydly-200 transition-all shadow-sm group shrink-0"
           >
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           </button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-display text-fydly-900 leading-tight">{customer.first_name}</h1>
-            </div>
-            <p className="text-fydly-500 font-medium">Membre depuis le {new Date(customer.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-4xl font-display text-fydly-900 leading-tight truncate">{customer.first_name}</h1>
+            <p className="text-fydly-500 font-medium text-xs sm:text-sm truncate">Membre depuis le {new Date(customer.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Button variant="secondary" onClick={() => setShowNotifModal(true)} className="flex-1 sm:flex-none h-12 bg-white border-fydly-100 hover:bg-fydly-50">
-            <Bell size={18} className="mr-2" />
-            Message privé
-          </Button>
-        </div>
+        <Button variant="secondary" onClick={() => setShowNotifModal(true)} className="shrink-0 h-11 sm:h-12 px-3 sm:px-4 bg-white border-fydly-100 hover:bg-fydly-50 text-sm">
+          <Bell size={16} className="mr-1.5" />
+          <span className="hidden sm:inline">Message privé</span>
+          <span className="sm:hidden">Message</span>
+        </Button>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8 items-start">
+      <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 items-start">
         {/* Left Column: Metrics & Profile */}
         <div className="space-y-8">
           <Card className="p-8 border-2 border-fydly-100/50">
@@ -280,15 +277,15 @@ export default function CustomerDetailPage() {
                   </div>
                </div>
                
-               <div className="grid grid-cols-5 gap-3 mb-8">
+               <div className={`grid gap-2 sm:gap-3 mb-8 ${threshold <= 10 ? 'grid-cols-5' : threshold <= 15 ? 'grid-cols-5' : 'grid-cols-5 sm:grid-cols-5'}`}>
                  {Array.from({ length: threshold }).map((_, i) => (
                    <div key={i} className="aspect-square flex items-center justify-center">
                      {i < card.balance ? (
-                       <div className="w-full h-full rounded-2xl bg-fydly-500 flex items-center justify-center shadow-lg shadow-fydly-500/30 transform hover:scale-110 transition-all duration-500">
-                         <ShieldCheck size={20} className="text-white" />
+                       <div className="w-full h-full rounded-xl sm:rounded-2xl bg-fydly-500 flex items-center justify-center shadow-lg shadow-fydly-500/30 transform hover:scale-110 transition-all duration-500">
+                         <ShieldCheck size={16} className="text-white sm:w-5 sm:h-5" />
                        </div>
                      ) : (
-                       <div className="w-full h-full rounded-2xl border-2 border-white/10 bg-white/5 backdrop-blur-sm" />
+                       <div className="w-full h-full rounded-xl sm:rounded-2xl border-2 border-white/10 bg-white/5 backdrop-blur-sm" />
                      )}
                    </div>
                  ))}
@@ -327,9 +324,9 @@ export default function CustomerDetailPage() {
 
         {/* Right Column: Timeline */}
         <div className="lg:col-span-2">
-          <Card className="p-8">
-            <h2 className="text-2xl font-display text-fydly-900 mb-10 pb-6 border-b border-fydly-50 flex items-center gap-3">
-              <Clock size={24} className="text-fydly-500" />
+          <Card className="p-5 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-display text-fydly-900 mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-fydly-50 flex items-center gap-3">
+              <Clock size={20} className="text-fydly-500 sm:w-6 sm:h-6" />
               Historique des activités
             </h2>
             
@@ -346,32 +343,32 @@ export default function CustomerDetailPage() {
                  <div className="absolute left-6 top-0 bottom-0 w-px bg-fydly-100 ml-px" />
                  
                  {transactions.map((tx) => (
-                   <div key={tx.id} className="relative pl-16 pb-12 last:pb-0 group">
+                   <div key={tx.id} className="relative pl-12 sm:pl-16 pb-8 sm:pb-12 last:pb-0 group">
                       {/* Timeline dot */}
-                      <div className={`absolute left-0 w-12 h-12 rounded-2xl flex items-center justify-center z-10 border-4 border-white shadow-sm transition-all group-hover:scale-110 ${
+                      <div className={`absolute left-0 w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center z-10 border-2 sm:border-4 border-white shadow-sm transition-all group-hover:scale-110 ${
                         tx.type === 'earn' ? 'bg-fydly-50 text-fydly-500' : 'bg-success-light text-success'
                       }`}>
-                        {tx.type === 'earn' ? <ShieldCheck size={20} /> : <Gift size={20} />}
+                        {tx.type === 'earn' ? <ShieldCheck size={16} className="sm:w-5 sm:h-5" /> : <Gift size={16} className="sm:w-5 sm:h-5" />}
                       </div>
 
-                      <div className="bg-fydly-50/30 border border-fydly-100/50 rounded-3xl p-6 group-hover:bg-fydly-50/50 transition-colors">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                           <div className="flex items-center gap-2">
-                             <h4 className="font-bold text-fydly-900 text-lg">
+                      <div className="bg-fydly-50/30 border border-fydly-100/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 group-hover:bg-fydly-50/50 transition-colors">
+                        <div className="flex flex-col gap-2 mb-2 sm:mb-3">
+                           <div className="flex items-center gap-2 flex-wrap">
+                             <h4 className="font-bold text-fydly-900 text-sm sm:text-lg">
                                {tx.type === 'earn' ? 'Visite en boutique' : 'Récompense débloquée'}
                              </h4>
                              <Badge className={tx.type === 'earn' ? 'bg-fydly-100 text-fydly-600' : 'bg-success-light text-success'}>
-                                {tx.type === 'earn' ? `+${tx.amount} points` : 'CADEAU'}
+                                {tx.type === 'earn' ? `+${tx.amount} pts` : 'CADEAU'}
                              </Badge>
                            </div>
-                           <time className="text-xs font-bold text-fydly-400 uppercase tracking-widest bg-white/50 px-3 py-1 rounded-full border border-fydly-100">
-                             {new Date(tx.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric'})} à {new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                           <time className="text-[10px] font-bold text-fydly-400 uppercase tracking-wider">
+                             {new Date(tx.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric'})} · {new Date(tx.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                            </time>
                         </div>
-                        <p className="text-fydly-600 font-medium">
+                        <p className="text-fydly-600 font-medium text-xs sm:text-sm leading-relaxed">
                           {tx.type === 'earn' 
-                            ? `Le client a validé un passage lors de sa visite. Son nouveau solde est de ${card.balance} tampons.`
-                            : `Félicitations ! Le client a profité de sa récompense : ${merchant?.reward_description || 'Cadeau Fidélité'}.`}
+                            ? `Passage validé en boutique. Solde actuel : ${card.balance} tampons.`
+                            : `Récompense utilisée : ${merchant?.reward_description || 'Cadeau Fidélité'}.`}
                         </p>
                       </div>
                    </div>
