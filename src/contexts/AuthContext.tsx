@@ -152,10 +152,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           profilesLoadedByInit = false
           return
         }
-        if (event === 'SIGNED_IN') setLoading(true)
-        loadProfiles(newSession).finally(() => {
-          if (mounted) setLoading(false)
-        })
+        if (event === 'SIGNED_IN') {
+          setLoading(true)
+          const signInTimeout = setTimeout(() => {
+            if (mounted) setLoading(false)
+          }, 5000)
+          loadProfiles(newSession).finally(() => {
+            clearTimeout(signInTimeout)
+            if (mounted) setLoading(false)
+          })
+        } else {
+          loadProfiles(newSession).finally(() => {
+            if (mounted) setLoading(false)
+          })
+        }
       } else {
         setMerchant(null)
         setCustomer(null)

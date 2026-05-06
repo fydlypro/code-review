@@ -103,6 +103,18 @@ a:active {
   scrollbar-width: none;
 }
 
+/* ─── Spinner de chargement ─── */
+.spinner {
+  border: 3px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ─── Bottom nav safe area padding ─── */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);

@@ -29,11 +29,9 @@ export default function MerchantLogin() {
       if (error) throw error
 
       if (data.user) {
-        // refreshMerchant va chercher la session réelle via getSession()
-        // MerchantPublicRoute détecte ensuite session+merchant et redirige vers /merchant/dashboard
         await refreshMerchant()
         toast.success('Connexion réussie')
-        // La redirection est gérée par MerchantPublicRoute via onAuthStateChange
+        navigate('/merchant/dashboard')
       }
     } catch (err: any) {
       console.error(err)
