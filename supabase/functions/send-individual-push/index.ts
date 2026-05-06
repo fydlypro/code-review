@@ -65,13 +65,43 @@ serve(async (req: Request) => {
       { auth: { persistSession: false } }
     );
 
-    const { customer_id, message, type = "system" } = await req.json();
+    const { merchant_id, customer_id, message, type = "system" } = await req.json();
 
-    if (!customer_id || !message) {
+    if (!merchant_id || !customer_id || !message) {
       return new Response(
-        JSON.stringify({ error: "Paramètres manquants (customer_id, message)" }),
+        JSON.stringify({ error: "Paramètres manquants (merchant_id, customer_id, message)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Vérifier que l'utilisateur est propriétaire du merchant
+    const { data: merchant, error: merchantError } = await supabaseAdmin
+      .from("merchants")
+      .select("id")
+      .eq("id", merchant_id)
+      .eq("user_id", userId)
+      .single();
+
+    if (merchantError || !merchant) {
+      return new Response(JSON.stringify({ error: "Commerçant introuvable ou accès refusé" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Vérifier que le client appartient bien à ce merchant
+    const { data: loyaltyCard, error: loyaltyError } = await supabaseAdmin
+      .from("loyalty_cards")
+      .select("id")
+      .eq("merchant_id", merchant_id)
+      .eq("customer_id", customer_id)
+      .single();
+
+    if (loyaltyError || !loyaltyCard) {
+      return new Response(JSON.stringify({ error: "Client introuvable ou accès refusé" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const { data: customer } = await supabaseAdmin
