@@ -1,0 +1,2 @@
+[functions.create-portal]
+verify_jwt = true

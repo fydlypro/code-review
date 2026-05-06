@@ -1,0 +1,2 @@
+[functions.notify-inactive]
+verify_jwt = false

@@ -1,0 +1,2 @@
+[functions.send-individual-push]
+verify_jwt = true
