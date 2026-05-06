@@ -155,32 +155,32 @@ export default function MerchantSettingsPage() {
   return (
     <div className="animate-fade-in max-w-6xl mx-auto pb-32 lg:pb-16 px-2 sm:px-0">
       {/* Page Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-5 mb-4">
-          {/* Avatar initiales */}
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-fydly-500 to-fydly-700 flex items-center justify-center text-white font-display text-xl shadow-lg shadow-fydly-500/20 shrink-0 select-none">
-            {initials}
+      <div className="mb-6 sm:mb-10">
+          <div className="flex items-center gap-4">
+            {/* Avatar initiales */}
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-fydly-500 to-fydly-700 flex items-center justify-center text-white font-display text-lg sm:text-xl shadow-lg shadow-fydly-500/20 shrink-0 select-none">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-4xl font-display text-fydly-900 leading-tight mb-0.5">Paramètres</h1>
+              <p className="text-fydly-400 font-medium text-sm">
+                Configurez votre boutique et vos préférences.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-display text-fydly-900 leading-tight mb-0.5">Paramètres</h1>
-            <p className="text-fydly-400 font-medium text-sm sm:text-base">
-              Configurez votre boutique, votre programme fidélité et vos préférences.
-            </p>
-          </div>
-        </div>
         {/* Breadcrumb sections rapides */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap mt-3 sm:mt-0">
           {[
             { href: '#commerce', label: 'Profil' },
             { href: '#fidelite', label: 'Programme' },
             { href: '#relances', label: 'Marketing' },
             { href: '#securite', label: 'Sécurité' },
-            { href: '#danger', label: 'Danger zone', danger: true },
+            { href: '#danger', label: '⚠️ Danger', danger: true },
           ].map(({ href, label, danger }) => (
             <a
               key={href}
               href={href}
-              className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border transition-colors ${
+              className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 min-h-[32px] flex items-center rounded-full border transition-colors ${
                 danger
                   ? 'text-red-400 border-red-100 hover:bg-red-50'
                   : 'text-fydly-400 border-fydly-100 hover:bg-fydly-50 hover:text-fydly-700'
@@ -222,7 +222,7 @@ export default function MerchantSettingsPage() {
           <section id="commerce" className="scroll-mt-8">
             <Card className="border border-fydly-100/70 shadow-card overflow-hidden">
               {/* Section Header */}
-              <div className="px-6 sm:px-8 py-5 border-b border-fydly-50 flex items-center justify-between bg-white">
+              <div className="px-4 sm:px-8 py-4 sm:py-5 border-b border-fydly-50 flex items-center justify-between bg-white">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-fydly-50 flex items-center justify-center text-fydly-500">
                     <Store size={18} />
@@ -237,7 +237,7 @@ export default function MerchantSettingsPage() {
                 </Badge>
               </div>
 
-              <div className="p-6 sm:p-8 space-y-8">
+              <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                 {/* Logo Upload + Avatar preview */}
                 <div className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-br from-fydly-50/80 to-white p-5 rounded-2xl border border-fydly-100/60">
                   <div className="relative shrink-0 group/avatar">
@@ -305,7 +305,7 @@ export default function MerchantSettingsPage() {
           {/* ── Section: Programme Fidélité ── */}
           <section id="fidelite" className="scroll-mt-8">
             <Card className="border border-fydly-100/70 shadow-card overflow-hidden">
-              <div className="px-6 sm:px-8 py-5 border-b border-fydly-50 flex items-center justify-between bg-white">
+              <div className="px-4 sm:px-8 py-4 sm:py-5 border-b border-fydly-50 flex items-center justify-between bg-white">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-fydly-900 flex items-center justify-center text-white">
                     <Star size={16} className="fill-current" />
@@ -320,7 +320,7 @@ export default function MerchantSettingsPage() {
                 </Badge>
               </div>
 
-              <div className="p-6 sm:p-8 space-y-8">
+              <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 items-start">
                   {/* Threshold Counter */}
                   <div className="space-y-3">
@@ -400,7 +400,7 @@ export default function MerchantSettingsPage() {
                 </Badge>
               </div>
 
-              <div className="p-6 sm:p-8 space-y-8">
+              <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                 {/* Toggle Row */}
                 <div className="flex items-center justify-between p-5 bg-fydly-50/60 rounded-2xl border border-fydly-100/60">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -478,7 +478,7 @@ export default function MerchantSettingsPage() {
                 </Badge>
               </div>
 
-              <div className="p-6 sm:p-8 space-y-8">
+              <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-fydly-400 uppercase tracking-widest pl-1">Email administrateur</label>

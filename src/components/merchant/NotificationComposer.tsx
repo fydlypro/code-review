@@ -34,19 +34,20 @@ export default function NotificationComposer({
 
   return (
     <Card 
-      className={`p-6 sm:p-8 flex flex-col gap-6 bg-white overflow-hidden shadow-modal ${className}`}
+      className={`p-4 sm:p-8 flex flex-col gap-5 sm:gap-6 bg-white overflow-hidden shadow-modal ${className}`}
       variant="base"
     >
-      <div className="flex items-center gap-4 border-b border-fydly-100 pb-5">
-        <div className="w-12 h-12 rounded-xl bg-fydly-500 text-white flex items-center justify-center shadow-[0_4px_12px_rgba(33,150,243,0.35)]">
-          <Sparkles size={24} />
+      <div className="flex items-center gap-3 sm:gap-4 border-b border-fydly-100 pb-4 sm:pb-5">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-fydly-500 text-white flex items-center justify-center shadow-[0_4px_12px_rgba(33,150,243,0.35)] shrink-0">
+          <Sparkles size={20} className="sm:hidden" />
+          <Sparkles size={24} className="hidden sm:block" />
         </div>
-        <div>
-          <h3 className="font-display text-xl sm:text-2xl text-fydly-900 leading-tight">
+        <div className="min-w-0">
+          <h3 className="font-display text-lg sm:text-2xl text-fydly-900 leading-tight">
             Campagne Push
           </h3>
-          <p className="text-fydly-400 text-xs font-semibold uppercase tracking-widest mt-1">
-            ENVOYER UNE NOTIFICATION EN DIRECT
+          <p className="text-fydly-400 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mt-0.5 sm:mt-1 truncate">
+            Notification en direct
           </p>
         </div>
       </div>
@@ -56,10 +57,10 @@ export default function NotificationComposer({
           <label className="text-xs font-bold text-fydly-500 uppercase tracking-widest ml-1">
             Segment Cible
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             <button
               onClick={() => setSegment('all')}
-              className={`flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl border-2 transition-all gap-1 min-h-[72px] ${
+              className={`flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all gap-0.5 sm:gap-1 min-h-[68px] sm:min-h-[72px] active:scale-[0.97] ${
                 segment === 'all' 
                   ? 'border-fydly-500 bg-fydly-50 text-fydly-900' 
                   : 'border-fydly-100 bg-white text-fydly-400 hover:border-fydly-200'
@@ -71,7 +72,7 @@ export default function NotificationComposer({
             </button>
             <button
               onClick={() => setSegment('active')}
-              className={`flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl border-2 transition-all gap-1 min-h-[72px] ${
+              className={`flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all gap-0.5 sm:gap-1 min-h-[68px] sm:min-h-[72px] active:scale-[0.97] ${
                 segment === 'active' 
                   ? 'border-success bg-success-light text-success' 
                   : 'border-fydly-100 bg-white text-fydly-400 hover:border-fydly-200'
@@ -83,7 +84,7 @@ export default function NotificationComposer({
             </button>
             <button
               onClick={() => setSegment('inactive')}
-              className={`flex flex-col items-center justify-center p-2.5 sm:p-4 rounded-xl border-2 transition-all gap-1 min-h-[72px] ${
+              className={`flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all gap-0.5 sm:gap-1 min-h-[68px] sm:min-h-[72px] active:scale-[0.97] ${
                 segment === 'inactive' 
                   ? 'border-warning-DEFAULT bg-warning-light text-warning-DEFAULT' 
                   : 'border-fydly-100 bg-white text-fydly-400 hover:border-fydly-200'
@@ -96,13 +97,13 @@ export default function NotificationComposer({
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] font-medium text-fydly-800 uppercase tracking-[2px]">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] sm:text-[12px] font-medium text-fydly-800 uppercase tracking-[1.5px] sm:tracking-[2px]">
                 Message de la notification
               </span>
-              <span className={`text-xs font-bold tabular-nums ${message.length > 120 ? message.length >= 140 ? 'text-error' : 'text-warning-DEFAULT' : 'text-fydly-300'}`}>
+              <span className={`text-[11px] sm:text-xs font-bold tabular-nums shrink-0 ${message.length > 120 ? message.length >= 140 ? 'text-error' : 'text-warning-DEFAULT' : 'text-fydly-300'}`}>
                 {message.length}/140
               </span>
             </div>
@@ -115,9 +116,9 @@ export default function NotificationComposer({
             />
           </div>
 
-          <div className="bg-fydly-50 rounded-xl p-4 border border-fydly-100 flex items-start gap-3">
-            <div className="text-fydly-400 mt-0.5">💡</div>
-            <p className="text-xs text-fydly-700 leading-relaxed font-medium italic opacity-70">
+          <div className="bg-fydly-50 rounded-xl p-3 sm:p-4 border border-fydly-100 flex items-start gap-2.5 sm:gap-3">
+            <div className="text-fydly-400 mt-0.5 shrink-0">💡</div>
+            <p className="text-[11px] sm:text-xs text-fydly-700 leading-relaxed font-medium italic opacity-70">
               Conseil : Les messages courts et avec des emojis obtiennent 30% d'engagement en plus.
             </p>
           </div>
@@ -125,13 +126,13 @@ export default function NotificationComposer({
 
         <Button 
           onClick={handleSend}
-          className="w-full mt-2 group"
+          className="w-full mt-1 sm:mt-2 group min-h-[48px]"
           isLoading={isLoading}
           disabled={!message.trim()}
         >
-          <div className="flex items-center justify-center gap-3">
-            <span>Envoyer la campagne</span>
-            <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+          <div className="flex items-center justify-center gap-2.5 sm:gap-3">
+            <span className="text-sm sm:text-base">Envoyer la campagne</span>
+            <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform shrink-0" />
           </div>
         </Button>
       </div>

@@ -340,9 +340,9 @@ export default function MerchantDashboard() {
 
   if (loading && !kpis.totalCustomers) {
     return (
-      <div className="space-y-6 p-4 sm:p-6">
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[1, 2, 3, 4].map(i => <SkeletonLoader key={i} variant="rect" className="h-28 sm:h-32 rounded-3xl" />)}
+      <div className="space-y-6 p-3 sm:p-6">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => <SkeletonLoader key={i} variant="rect" className="h-[100px] sm:h-32 rounded-3xl" />)}
         </div>
         <SkeletonLoader variant="card" className="h-[300px] sm:h-[400px]" />
       </div>
@@ -350,9 +350,9 @@ export default function MerchantDashboard() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-32 lg:pb-10">
+    <div className="space-y-5 sm:space-y-8 pb-32 lg:pb-10">
       {/* ─── QUICK ACTIONS (TOP SECTION) ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 animate-fade-in">
         <div className="lg:col-span-2 order-2 lg:order-1">
           {activeToken ? (
             <QrDisplay
@@ -368,20 +368,21 @@ export default function MerchantDashboard() {
           )}
         </div>
         <div className="order-1 lg:order-2">
-          <div className="h-full min-h-[160px] sm:min-h-[200px] bg-fydly-500 rounded-[32px] p-5 sm:p-8 text-white shadow-xl shadow-fydly-500/20 flex flex-row sm:flex-col justify-between sm:justify-center items-center sm:text-center gap-4 group cursor-pointer hover:bg-fydly-600 transition-all active:scale-95 active:shadow-inner" onClick={startScanner}>
-            <div className="flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0">
-              <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/20 rounded-3xl flex items-center justify-center sm:mb-4 backdrop-blur-md group-hover:scale-110 transition-transform duration-500 shrink-0">
-                <Scan size={32} className="text-white" />
+          <div className="h-full min-h-[72px] sm:min-h-[200px] bg-fydly-500 rounded-2xl sm:rounded-[32px] p-4 sm:p-8 text-white shadow-xl shadow-fydly-500/20 flex flex-row sm:flex-col justify-between sm:justify-center items-center sm:text-center gap-3 sm:gap-4 group cursor-pointer hover:bg-fydly-600 transition-all active:scale-[0.98] active:shadow-inner" onClick={startScanner}>
+            <div className="flex sm:flex-col items-center sm:items-center gap-3 sm:gap-0 min-w-0">
+              <div className="w-12 h-12 sm:w-20 sm:h-20 bg-white/20 rounded-2xl sm:rounded-3xl flex items-center justify-center sm:mb-4 backdrop-blur-md group-hover:scale-110 transition-transform duration-500 shrink-0">
+                <Scan size={24} className="text-white sm:hidden" />
+                <Scan size={32} className="text-white hidden sm:block" />
               </div>
-              <div>
-                <h2 className="text-lg sm:text-2xl font-display font-bold sm:mb-2">🎁 Valider une récompense</h2>
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-2xl font-display font-bold sm:mb-2">🎁 Valider une récompense</h2>
                 <p className="text-white/80 text-xs sm:text-sm font-medium leading-relaxed hidden sm:block max-w-[200px]">
                   Scannez le QR Code de votre client pour valider son cadeau.
                 </p>
               </div>
             </div>
             <div className="shrink-0 sm:hidden">
-              <span className="text-white/70 text-xs font-bold uppercase tracking-widest">Scanner</span>
+              <span className="text-white/70 text-[11px] font-bold uppercase tracking-widest">Scanner →</span>
             </div>
           </div>
         </div>
@@ -397,10 +398,10 @@ export default function MerchantDashboard() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-5 sm:gap-8">
-        <div className="lg:col-span-2 space-y-5 sm:space-y-8">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-8">
           {/* Metrics — 2 cols on mobile, 4 on desktop */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             <KpiCard label="👥 Clients fidèles" value={kpis.totalCustomers} icon={<Users />} onClick={() => navigate('/merchant/customers')} />
             <KpiCard label="🟡 Tampons ce mois" value={kpis.stampsThisMonth} icon={<Ticket />} />
             <KpiCard label="🎁 Récompenses" value={kpis.rewardsThisMonth} icon={<Gift />} onClick={() => navigate('/merchant/customers?filter=reward')} />
@@ -427,7 +428,7 @@ export default function MerchantDashboard() {
         </div>
 
         {/* Sidebar Actions/Info */}
-        <div className="space-y-5 sm:space-y-8">
+        <div className="space-y-4 sm:space-y-8">
           {/* Marketing */}
           <NotificationComposer 
             onSend={handleSendNotification}
@@ -435,13 +436,13 @@ export default function MerchantDashboard() {
             inactiveClientsCount={kpis.inactiveCustomers}
           />
           
-          <div className="bg-fydly-900 rounded-[24px] sm:rounded-[32px] p-6 sm:p-8 text-white relative overflow-hidden group">
+          <div className="bg-fydly-900 rounded-2xl sm:rounded-[32px] p-5 sm:p-8 text-white relative overflow-hidden group">
             <div className="relative z-10 flex flex-col h-full">
-              <h3 className="text-xl sm:text-2xl font-display mb-3 sm:mb-4 leading-tight">Booster mes ventes</h3>
-              <p className="text-white/70 text-sm mb-5 sm:mb-6 leading-relaxed">
+              <h3 className="text-lg sm:text-2xl font-display mb-2 sm:mb-4 leading-tight">Booster mes ventes</h3>
+              <p className="text-white/70 text-[13px] sm:text-sm mb-4 sm:mb-6 leading-relaxed">
                 Configurez des relances automatiques pour vos clients inactifs.
               </p>
-              <Button variant="secondary" className="mt-auto bg-white/10 border-white/20 text-white hover:bg-white/20" onClick={() => navigate('/merchant/notifications')}>
+              <Button variant="secondary" className="mt-auto bg-white/10 border-white/20 text-white hover:bg-white/20 min-h-[44px]" onClick={() => navigate('/merchant/notifications')}>
                 Gérer les campagnes
               </Button>
             </div>

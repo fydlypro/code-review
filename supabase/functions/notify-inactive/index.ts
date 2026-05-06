@@ -7,17 +7,24 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const appUrl = Deno.env.get("APP_URL") ?? "https://fydly.vercel.app";
+  const allowed = [appUrl, "http://localhost:5173", "http://localhost:4173"];
+  const allowedOrigin = origin && allowed.includes(origin) ? origin : appUrl;
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
 
 serve(async (req: Request) => {
-  // Sécurité : vérification du secret CRON si l'appel est externe
+  const corsHeaders = getCorsHeaders(req.headers.get("Origin"));
+
   const authHeader = req.headers.get("Authorization");
   const cronSecret = Deno.env.get("CRON_SECRET");
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return new Response(JSON.stringify({ error: "Non autorisé" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -125,7 +132,7 @@ serve(async (req: Request) => {
 
   } catch (error: any) {
     console.error("[notify-inactive] Erreur critique:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Erreur interne." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

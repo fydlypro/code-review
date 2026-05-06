@@ -25,7 +25,7 @@ export default function KpiCard({
 }: KpiCardProps) {
   return (
     <Card
-      className={`flex flex-col gap-3 sm:gap-5 p-4 sm:p-6 group hover:shadow-card-hover hover:border-fydly-200 transition-all duration-200 border border-transparent ${onClick ? 'cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fydly-500 focus-visible:ring-offset-2' : ''} ${className}`}
+      className={`flex flex-col gap-2.5 sm:gap-5 p-3.5 sm:p-6 group hover:shadow-card-hover hover:border-fydly-200 transition-all duration-200 border border-transparent min-h-[100px] sm:min-h-0 ${onClick ? 'cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fydly-500 focus-visible:ring-offset-2' : ''} ${className}`}
       variant="kpi"
       onClick={onClick}
       role={onClick ? 'button' : undefined}
@@ -34,7 +34,7 @@ export default function KpiCard({
     >
       <div className="flex justify-between items-start">
         {/* Icon in colored circle */}
-        <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 ${iconColor}`}>
+        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 shrink-0 ${iconColor}`}>
           <div className="w-5 h-5 sm:w-6 sm:h-6">
             {icon}
           </div>
@@ -55,8 +55,8 @@ export default function KpiCard({
         )}
       </div>
 
-      <div className="space-y-0.5 sm:space-y-1.5">
-        <span className="text-fydly-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-[2px] block leading-tight">
+      <div className="space-y-0.5 sm:space-y-1.5 min-w-0">
+        <span className="text-fydly-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-[1px] sm:tracking-[2px] block leading-tight break-words hyphens-auto">
           {label}
         </span>
         <span className="text-fydly-900 text-2xl sm:text-4xl font-display leading-none tabular-nums">

@@ -7,8 +7,10 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.5.0?target=deno";
 
+// Le webhook Stripe est appelé par les serveurs Stripe (server-to-server).
+// CORS n'est pas utilisé pour ce type d'appel, mais on restreint par précaution.
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://stripe.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
@@ -226,7 +228,7 @@ serve(async (req: Request) => {
   } catch (error) {
     console.error("[stripe-webhook] Erreur interne:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: "Erreur interne." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

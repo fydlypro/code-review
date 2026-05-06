@@ -45,16 +45,16 @@ export default function RecentScans({ scans, className = '' }: RecentScansProps)
       variant="base"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-5 border-b border-fydly-50">
-        <div>
-          <h3 className="font-display text-2xl text-fydly-900 leading-tight">
+      <div className="flex items-center justify-between px-4 sm:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5 border-b border-fydly-50">
+        <div className="min-w-0">
+          <h3 className="font-display text-xl sm:text-2xl text-fydly-900 leading-tight">
             Activité récente
           </h3>
-          <p className="text-fydly-400 text-[10px] font-bold uppercase tracking-[2px] mt-0.5">
+          <p className="text-fydly-400 text-[10px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mt-0.5">
             Derniers passages clients
           </p>
         </div>
-        <div className="w-10 h-10 rounded-2xl bg-fydly-50 flex items-center justify-center text-fydly-500 border border-fydly-100">
+        <div className="w-10 h-10 rounded-2xl bg-fydly-50 flex items-center justify-center text-fydly-500 border border-fydly-100 shrink-0 ml-3">
           <Clock size={18} />
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function RecentScans({ scans, className = '' }: RecentScansProps)
             return (
               <div
                 key={scan.id}
-                className="group flex items-center gap-4 px-6 py-4 hover:bg-fydly-50/40 transition-all duration-150"
+                className="group flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-3.5 sm:py-4 hover:bg-fydly-50/40 transition-all duration-150 active:bg-fydly-50/60"
               >
                 {/* Avatar */}
                 <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold shadow-sm ring-2 ring-white ${
@@ -92,13 +92,13 @@ export default function RecentScans({ scans, className = '' }: RecentScansProps)
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-fydly-900 text-sm truncate">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                    <span className="font-bold text-fydly-900 text-[13px] sm:text-sm truncate block min-w-0">
                       {scan.customerName}
                     </span>
                     {scan.isReward && (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-100">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-100 shrink-0 whitespace-nowrap">
                         <Gift size={9} /> Cadeau
                       </span>
                     )}
@@ -107,7 +107,7 @@ export default function RecentScans({ scans, className = '' }: RecentScansProps)
                     {scan.timeStr}
                   </p>
                   {/* Progress bar */}
-                  <div className="mt-2 h-1 w-24 bg-fydly-100 rounded-full overflow-hidden">
+                  <div className="mt-2 h-1 w-20 sm:w-24 bg-fydly-100 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${scan.isReward ? 'bg-emerald-400' : 'bg-fydly-500'}`}
                       style={{ width: `${progress}%` }}
@@ -130,8 +130,8 @@ export default function RecentScans({ scans, className = '' }: RecentScansProps)
       </div>
 
       {scans.length > 0 && (
-        <div className="px-6 py-4 border-t border-fydly-50">
-          <button className="w-full py-2.5 text-fydly-500 text-xs font-bold uppercase tracking-widest hover:bg-fydly-50 rounded-xl transition-colors">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-t border-fydly-50">
+          <button className="w-full py-3 min-h-[44px] text-fydly-500 text-xs font-bold uppercase tracking-widest hover:bg-fydly-50 rounded-xl transition-colors active:bg-fydly-100">
             Voir tout l'historique →
           </button>
         </div>

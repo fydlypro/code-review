@@ -224,9 +224,9 @@ export default function CustomerDetailPage() {
       <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 items-start">
         {/* Left Column: Metrics & Profile */}
         <div className="space-y-8">
-          <Card className="p-8 border-2 border-fydly-100/50">
-            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-fydly-50">
-               <div className="w-16 h-16 bg-fydly-900 rounded-2xl flex items-center justify-center text-white text-2xl font-display">
+          <Card className="p-5 sm:p-8 border-2 border-fydly-100/50">
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 pb-5 sm:pb-6 border-b border-fydly-50">
+               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-fydly-900 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-display shrink-0">
                  {customer.first_name?.[0]?.toUpperCase() || '?'}
                </div>
                <div>
@@ -268,7 +268,7 @@ export default function CustomerDetailPage() {
             </div>
           </Card>
 
-          <Card className="bg-fydly-900 border-none p-8 text-white relative overflow-hidden group">
+          <Card className="bg-fydly-900 border-none p-5 sm:p-8 text-white relative overflow-hidden group">
              <div className="relative z-10">
                <div className="flex items-center justify-between mb-8">
                   <h3 className="text-xl font-bold font-display">Progression Fidélité</h3>
@@ -300,7 +300,7 @@ export default function CustomerDetailPage() {
           </Card>
 
           {availableReward && (
-            <Card className="p-8 border-2 border-success/20 bg-success-light/30">
+            <Card className="p-5 sm:p-8 border-2 border-success/20 bg-success-light/30">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-success shadow-sm border border-success/10">
                   <Gift size={28} />
@@ -324,7 +324,7 @@ export default function CustomerDetailPage() {
 
         {/* Right Column: Timeline */}
         <div className="lg:col-span-2">
-          <Card className="p-5 sm:p-8">
+          <Card className="p-4 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-display text-fydly-900 mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-fydly-50 flex items-center gap-3">
               <Clock size={20} className="text-fydly-500 sm:w-6 sm:h-6" />
               Historique des activités
