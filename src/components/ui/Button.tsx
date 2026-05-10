@@ -31,20 +31,20 @@ export default function Button({
 
   const variants = {
     primary:
-      'bg-fydly-500 text-white shadow-sm shadow-fydly-500/20 ' +
-      'hover:bg-fydly-600 hover:-translate-y-[1px] hover:shadow-md hover:shadow-fydly-500/30 ' +
+      'bg-fydly-500 text-white shadow-sm ' +
+      'hover:bg-fydly-600 hover:-translate-y-[1px] hover:shadow-[0_8px_20px_rgba(37,99,235,0.28)] ' +
       'focus:ring-fydly-500/15',
     secondary:
-      'bg-white text-fydly-800 border border-fydly-200 shadow-sm ' +
-      'hover:bg-fydly-50 hover:border-fydly-300 hover:-translate-y-[1px] hover:shadow-sm ' +
+      'bg-white text-slate-700 border border-slate-200 shadow-sm ' +
+      'hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-[1px] hover:shadow-card ' +
       'focus:ring-fydly-500/10',
     ghost:
-      'bg-transparent text-fydly-700 ' +
-      'hover:bg-fydly-50 hover:text-fydly-900 ' +
+      'bg-transparent text-slate-600 ' +
+      'hover:bg-slate-100 hover:text-slate-900 ' +
       'focus:ring-fydly-500/10',
     danger:
-      'bg-red-500 text-white shadow-sm shadow-red-500/20 ' +
-      'hover:bg-red-600 hover:-translate-y-[1px] hover:shadow-md hover:shadow-red-500/30 ' +
+      'bg-error text-white shadow-sm ' +
+      'hover:bg-red-700 hover:-translate-y-[1px] hover:shadow-md ' +
       'focus:ring-red-500/15',
   };
 

@@ -174,7 +174,7 @@ export default function Auth() {
               <Zap size={11} fill="currentColor" />
               Tampon en attente
             </div>
-            <h1 className="text-[32px] font-display text-fydly-900 leading-tight">
+            <h1 className="text-2xl sm:text-[32px] font-display text-fydly-900 leading-tight">
               Gagnez vos tampons<br />
               chez <span className="text-fydly-500">{merchantName}</span> !
             </h1>
@@ -184,7 +184,7 @@ export default function Auth() {
           </div>
         ) : (
           <div className="text-center space-y-2 animate-fade-in">
-            <h1 className="text-[32px] font-display text-fydly-900 leading-tight">
+            <h1 className="text-2xl sm:text-[32px] font-display text-fydly-900 leading-tight">
               Votre espace<br />
               <span className="text-fydly-500">fidélité</span>
             </h1>

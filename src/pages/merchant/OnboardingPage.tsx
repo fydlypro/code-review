@@ -152,7 +152,7 @@ export default function OnboardingPage() {
       </header>
 
       {/* ── Contenu principal ── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-16">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-10 sm:pt-24 sm:pb-16">
         <div className="w-full max-w-4xl animate-fade-in">
 
           {/* Titre de l'étape */}
@@ -161,7 +161,7 @@ export default function OnboardingPage() {
             <div className="sm:hidden inline-flex items-center gap-2 bg-fydly-100 text-fydly-600 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-[100px] mb-5">
               Étape {step} sur {TOTAL_STEPS}
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-fydly-900 leading-tight mb-3">
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl text-fydly-900 leading-tight mb-3">
               {step === 1 ? 'Configurons votre programme' : 'Définissez votre récompense'}
             </h1>
             <p className="text-fydly-500 font-medium text-base sm:text-lg max-w-lg mx-auto">

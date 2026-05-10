@@ -105,7 +105,7 @@ export default function NotificationsPage() {
     new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="animate-fade-in pb-20 lg:pb-12 max-w-6xl mx-auto px-2 sm:px-0">
+    <div className="animate-fade-in pb-20 lg:pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
@@ -114,8 +114,8 @@ export default function NotificationsPage() {
             <Radio size={22} />
           </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl font-display text-fydly-900 leading-tight">Campagnes</h1>
-            <p className="text-fydly-400 font-medium text-sm">Historique et performance de vos communications push.</p>
+            <h1 className="text-2xl sm:text-3xl font-display text-fydly-900 leading-tight">Campagnes</h1>
+            <p className="text-fydly-400 font-medium text-xs sm:text-sm">Historique et performance de vos communications push.</p>
           </div>
         </div>
       </div>

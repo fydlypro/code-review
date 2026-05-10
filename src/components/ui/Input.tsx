@@ -18,7 +18,7 @@ export default function Input({ label, error, hint, className = '', id, ...props
       {label && (
         <label
           htmlFor={inputId}
-          className="text-[11px] font-bold text-fydly-600 uppercase tracking-[1.5px]"
+          className="text-[11px] font-bold text-slate-500 uppercase tracking-[1.5px]"
         >
           {label}
         </label>
@@ -26,13 +26,13 @@ export default function Input({ label, error, hint, className = '', id, ...props
       <input
         id={inputId}
         className={[
-          'w-full border-[1.5px] rounded-btn px-[18px] py-[14px] text-base text-fydly-900 bg-white',
-          'placeholder:text-fydly-300 font-medium transition-all duration-150',
+          'w-full border-[1.5px] rounded-btn px-[18px] py-[14px] text-base text-slate-900 bg-white',
+          'placeholder:text-slate-400 font-medium transition-all duration-150',
           'focus:outline-none focus:ring-[3px]',
-          'disabled:opacity-50 disabled:bg-fydly-50 disabled:cursor-not-allowed',
+          'disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed',
           error
             ? 'border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-500/10'
-            : 'border-fydly-200 focus:border-fydly-500 focus:ring-fydly-500/10',
+            : 'border-slate-200 focus:border-fydly-500 focus:ring-fydly-500/10',
         ].join(' ')}
         style={{ fontSize: '16px' }}
         aria-invalid={error ? 'true' : undefined}

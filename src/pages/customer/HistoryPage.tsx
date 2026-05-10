@@ -61,7 +61,7 @@ export default function HistoryPage() {
             <HistoryIcon size={22} />
           </div>
           <div>
-            <h2 className="text-[28px] font-display text-fydly-900 leading-tight">Mon Historique</h2>
+            <h2 className="text-2xl sm:text-[28px] font-display text-fydly-900 leading-tight">Mon Historique</h2>
             <p className="text-fydly-400 font-medium text-sm">Tampons & cadeaux</p>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function HistoryPage() {
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
                     {/* Icône timeline */}
-                    <div className={`relative z-10 w-[54px] h-[54px] rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105
+                    <div className={`relative z-10 w-11 h-11 sm:w-[54px] sm:h-[54px] rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105
                       ${isEarn
                         ? 'bg-green-50 border border-green-100'
                         : 'bg-fydly-50 border border-fydly-100'

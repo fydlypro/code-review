@@ -5,25 +5,43 @@
 
 @layer base {
   body {
-    @apply font-sans antialiased bg-blue-50 text-blue-900;
+    @apply font-sans antialiased bg-slate-50 text-slate-900;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01';
+    letter-spacing: -0.005em;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
+    letter-spacing: -0.02em;
   }
 }
 
 @layer components {
+  /* Sidebar nav — V2 style: active = bg-fydly-50 text-fydly-500 border-left */
   .nav-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-fydly-700 font-medium transition-all duration-200 hover:bg-fydly-50 hover:text-fydly-900;
-  }
-  
-  .nav-item-active {
-    @apply bg-fydly-500 text-white shadow-card hover:bg-fydly-600 hover:text-white;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-slate-600 font-medium transition-all duration-150
+           hover:bg-slate-50 hover:text-slate-900 w-full text-left;
   }
 
-  .font-serif {
-    font-family: 'DM Serif Display', serif;
+  .nav-item-active {
+    @apply bg-fydly-50 text-fydly-500 font-semibold;
+    border-left: 3px solid theme('colors.fydly.500');
+    padding-left: calc(theme('spacing.3') - 3px);
+  }
+
+  /* Gradient text utility */
+  .text-gradient-bv {
+    background: linear-gradient(135deg, #2563EB, #7C3AED);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glass surface */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60;
   }
 }
 
@@ -129,11 +147,11 @@ a:active {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #BBDEFB;
+  background: #E2E8F0;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #90CAF9;
+  background: #CBD5E1;
 }
 
 @keyframes fadeIn {

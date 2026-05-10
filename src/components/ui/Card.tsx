@@ -16,10 +16,10 @@ export default function Card({
   const baseClasses = 'bg-white rounded-card transition-all duration-200';
 
   const variants = {
-    base:     'shadow-card border border-fydly-100/40',
-    elevated: 'shadow-modal border border-fydly-100/60',
-    kpi:      'shadow-card border border-fydly-100/60 bg-gradient-to-br from-white to-fydly-50/30',
-    section:  'bg-fydly-50 border border-fydly-100 shadow-none rounded-[20px]',
+    base:     'shadow-card border border-slate-100',
+    elevated: 'shadow-modal border border-slate-100',
+    kpi:      'shadow-card border border-slate-100',
+    section:  'bg-slate-50 border border-slate-100 shadow-none rounded-[20px]',
   };
 
   const hoverClass = hoverable

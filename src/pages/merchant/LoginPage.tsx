@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ShieldCheck, Store, TrendingUp, Users } from 'lucide-react'
+import { ShieldCheck, Store, TrendingUp, Users, Zap } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -65,20 +65,26 @@ export default function MerchantLogin() {
   }
 
   return (
-    <div className="min-h-screen flex bg-fydly-50">
+    <div className="min-h-screen flex bg-slate-50">
 
       {/* ── Panneau gauche — visuel desktop ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[46%] min-h-screen bg-fydly-900 p-12 relative overflow-hidden">
-        {/* Cercles décoratifs */}
-        <div className="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full bg-fydly-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-[360px] h-[360px] rounded-full bg-fydly-500/10 blur-2xl pointer-events-none" />
+      <div className="hidden lg:flex flex-col justify-between w-[46%] min-h-screen bg-slate-900 p-12 relative overflow-hidden">
+        {/* Blobs décoratifs */}
+        <div className="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 -right-20 w-[300px] h-[300px] rounded-full bg-fydly-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-[360px] h-[360px] rounded-full bg-violet-600/10 blur-2xl pointer-events-none" />
 
         {/* Logo */}
-        <div className="relative z-10">
-          <span className="font-display text-3xl text-white tracking-tight">
-            Fydly<span className="text-fydly-400">·</span>
-          </span>
-          <p className="text-fydly-300 text-sm font-medium mt-1">Fidélité digitale pour commerçants</p>
+        <div className="relative z-10 flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-gradient-bv rounded-[10px] flex items-center justify-center shadow-glow-blue">
+            <Zap size={16} className="text-white" fill="currentColor" />
+          </div>
+          <div>
+            <span className="font-display text-2xl text-white tracking-tight">
+              Fydly<span className="text-fydly-400">·</span>
+            </span>
+            <p className="text-slate-400 text-xs font-medium mt-0.5">Fidélité digitale pour commerçants</p>
+          </div>
         </div>
 
         {/* Headline centrale */}
@@ -86,16 +92,16 @@ export default function MerchantLogin() {
           <div>
             <h2 className="font-display text-5xl text-white leading-tight mb-4">
               Vos clients<br />
-              <span className="text-fydly-400">reviennent.</span><br />
+              <span className="text-gradient-bv italic">reviennent.</span><br />
               Toujours.
             </h2>
-            <p className="text-fydly-300 text-lg font-medium leading-relaxed max-w-xs">
+            <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-xs">
               Pilotez votre programme de fidélité depuis un seul endroit, simplement.
             </p>
           </div>
 
           {/* Stats de réassurance */}
-          <div className="grid grid-cols-1 gap-4 max-w-xs">
+          <div className="grid grid-cols-1 gap-3 max-w-xs">
             {[
               { icon: Store,      stat: '7',        label: 'commerces actifs' },
               { icon: Users,      stat: '300+',     label: 'clients fidélisés' },
@@ -107,7 +113,7 @@ export default function MerchantLogin() {
                 </div>
                 <div>
                   <p className="text-white font-display text-xl leading-none">{stat}</p>
-                  <p className="text-fydly-400 text-xs font-medium mt-0.5">{label}</p>
+                  <p className="text-slate-400 text-xs font-medium mt-0.5">{label}</p>
                 </div>
               </div>
             ))}
@@ -115,7 +121,7 @@ export default function MerchantLogin() {
         </div>
 
         {/* Mention légale bas */}
-        <p className="relative z-10 text-fydly-500 text-xs font-medium">© 2026 Fydly — Tous droits réservés</p>
+        <p className="relative z-10 text-slate-500 text-xs font-medium">© 2026 Fydly — Tous droits réservés</p>
       </div>
 
       {/* ── Panneau droit — formulaire ── */}
@@ -123,23 +129,28 @@ export default function MerchantLogin() {
 
         {/* Logo mobile uniquement */}
         <div className="lg:hidden mb-10 text-center">
-          <span className="font-display text-3xl text-fydly-900">
-            Fydly<span className="text-fydly-500">·</span>
-          </span>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-7 h-7 bg-gradient-bv rounded-[8px] flex items-center justify-center">
+              <Zap size={14} className="text-white" fill="currentColor" />
+            </div>
+            <span className="font-display text-2xl text-slate-900">
+              Fydly<span className="text-fydly-500">·</span>
+            </span>
+          </div>
         </div>
 
         <div className="w-full max-w-[420px] animate-fade-in">
 
           {/* En-tête form */}
           <div className="mb-10">
-            <div className="inline-flex items-center gap-2 bg-fydly-100 text-fydly-700 text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-[100px] mb-6">
+            <div className="inline-flex items-center gap-2 bg-fydly-50 text-fydly-600 text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-[100px] mb-6 border border-fydly-100">
               <ShieldCheck size={13} />
               Espace commerçant
             </div>
-            <h1 className="font-display text-4xl sm:text-5xl text-fydly-900 leading-tight mb-3">
+            <h1 className="font-display text-4xl sm:text-5xl text-slate-900 leading-tight mb-3">
               Bon retour&nbsp;!
             </h1>
-            <p className="text-fydly-500 font-medium text-base">
+            <p className="text-slate-500 font-medium text-base">
               Vos clients vous attendent. Connectez-vous pour reprendre là où vous en étiez.
             </p>
           </div>
@@ -180,7 +191,7 @@ export default function MerchantLogin() {
               <Button
                 type="submit"
                 isLoading={loading}
-                className="w-full py-4 text-base shadow-lg shadow-fydly-500/20"
+                className="w-full py-4 text-base"
               >
                 Se connecter
               </Button>
@@ -188,11 +199,11 @@ export default function MerchantLogin() {
           </form>
 
           {/* Lien inscription */}
-          <p className="text-center text-sm text-fydly-500 mt-8 font-medium">
+          <p className="text-center text-sm text-slate-500 mt-8 font-medium">
             Pas encore de compte ?{' '}
             <Link
               to="/merchant/register"
-              className="text-fydly-600 hover:text-fydly-800 font-bold underline-offset-4 hover:underline transition-colors"
+              className="text-fydly-600 hover:text-fydly-700 font-bold underline-offset-4 hover:underline transition-colors"
             >
               Rejoindre Fydly
             </Link>

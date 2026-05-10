@@ -277,7 +277,7 @@ export default function CustomerDetailPage() {
                   </div>
                </div>
                
-               <div className={`grid gap-2 sm:gap-3 mb-8 ${threshold <= 10 ? 'grid-cols-5' : threshold <= 15 ? 'grid-cols-5' : 'grid-cols-5 sm:grid-cols-5'}`}>
+               <div className={`grid gap-1.5 sm:gap-3 mb-8 ${threshold <= 10 ? 'grid-cols-5' : threshold <= 15 ? 'grid-cols-5 sm:grid-cols-5' : 'grid-cols-5 sm:grid-cols-5 md:grid-cols-6'}`}>
                  {Array.from({ length: threshold }).map((_, i) => (
                    <div key={i} className="aspect-square flex items-center justify-center">
                      {i < card.balance ? (

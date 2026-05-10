@@ -381,7 +381,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-fade-in pb-32 lg:pb-12">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in pb-24 lg:pb-12">
       {notifModal && (
         <NotifModal
           defaultMessage={notifModal.message}

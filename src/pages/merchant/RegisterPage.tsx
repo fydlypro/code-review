@@ -138,7 +138,7 @@ export default function MerchantRegister() {
   }
 
   return (
-    <div className="min-h-screen flex items-start justify-center bg-fydly-50 py-10 px-4">
+    <div className="min-h-screen flex items-start justify-center bg-fydly-50 py-6 sm:py-10 px-4">
       <div className="w-full max-w-lg animate-fade-in px-0">
 
         {/* Logo */}
@@ -174,7 +174,7 @@ export default function MerchantRegister() {
             <div className="w-16 h-16 bg-fydly-50 border border-fydly-100 rounded-[20px] flex items-center justify-center mb-5 text-fydly-500 shadow-sm">
               <Store size={32} />
             </div>
-            <h1 className="font-display text-4xl text-fydly-900 mb-1">Rejoignez Fydly</h1>
+            <h1 className="font-display text-3xl sm:text-4xl text-fydly-900 mb-1">Rejoignez Fydly</h1>
             <p className="text-fydly-500 font-medium text-sm">Vos clients reviendront. Promis.</p>
           </div>
 

@@ -159,7 +159,7 @@ export default function SettingsPage() {
 
       {/* Header page */}
       <div className="pt-1">
-        <h2 className="text-[28px] font-display text-fydly-900 leading-tight">Paramètres</h2>
+        <h2 className="text-2xl sm:text-[28px] font-display text-fydly-900 leading-tight">Paramètres</h2>
         <p className="text-fydly-400 font-medium text-sm mt-0.5">Votre compte & préférences</p>
       </div>
 
@@ -181,7 +181,7 @@ export default function SettingsPage() {
               <p className="text-fydly-400 font-medium text-sm truncate mt-0.5">{user?.email}</p>
             </div>
 
-            <Badge variant="default" className="hidden sm:flex rounded-[100px] shrink-0">Membre</Badge>
+            <Badge variant="default" className="flex rounded-[100px] shrink-0 text-[10px]">Membre</Badge>
           </div>
         </Card>
       </section>

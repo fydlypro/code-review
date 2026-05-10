@@ -153,7 +153,7 @@ export default function MerchantSettingsPage() {
     : '??'
 
   return (
-    <div className="animate-fade-in max-w-6xl mx-auto pb-32 lg:pb-16 px-2 sm:px-0">
+    <div className="animate-fade-in max-w-6xl mx-auto pb-24 lg:pb-8 px-4 sm:px-6 lg:px-0">
       {/* Page Header */}
       <div className="mb-6 sm:mb-10">
           <div className="flex items-center gap-4">
@@ -332,8 +332,7 @@ export default function MerchantSettingsPage() {
                         max={20}
                         value={threshold}
                         onChange={(e) => setThreshold(e.target.value)}
-                        className="w-full h-20 rounded-2xl text-center font-display text-fydly-900 border-2 border-fydly-200 focus:border-fydly-500 focus:ring-[3px] focus:ring-fydly-500/10 focus:outline-none bg-white transition-all duration-150"
-                        style={{ fontSize: '2.5rem' }}
+                        className="w-full h-14 sm:h-20 rounded-2xl text-center font-display text-fydly-900 border-2 border-fydly-200 focus:border-fydly-500 focus:ring-[3px] focus:ring-fydly-500/10 focus:outline-none bg-white transition-all duration-150 text-3xl sm:text-[2.5rem]"
                       />
                       <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-white text-[9px] font-bold text-fydly-400 uppercase tracking-widest px-3 py-0.5 border border-fydly-100 rounded-full whitespace-nowrap shadow-sm">
                         points / carte

@@ -75,10 +75,10 @@ export default function SupportPage() {
         </div>
 
         <div className="space-y-1.5">
-          <h1 className="text-[28px] font-display text-fydly-900 leading-tight">
+          <h1 className="text-2xl sm:text-[28px] font-display text-fydly-900 leading-tight">
             Service client
           </h1>
-          <p className="text-fydly-500 text-sm font-medium leading-relaxed max-w-[240px] mx-auto">
+          <p className="text-fydly-500 text-sm font-medium leading-relaxed max-w-xs mx-auto">
             Une question ou un problème&nbsp;? Notre équipe vous répond rapidement.
           </p>
         </div>

@@ -65,7 +65,7 @@ export default function StampCard({
     <div
       className={[
         'relative bg-white rounded-card shadow-card overflow-hidden',
-        'p-6 sm:p-8 flex flex-col gap-7',
+        'p-5 sm:p-7 flex flex-col gap-5 sm:gap-7',
         'transition-all duration-200 hover:shadow-card-hover hover:-translate-y-[2px]',
         'bg-gradient-to-br from-white via-white to-fydly-50/30',
       ].join(' ')}
