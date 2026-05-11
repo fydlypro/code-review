@@ -132,12 +132,22 @@ export default function CardPage() {
   useEffect(() => {
     if (!customer?.id) return
 
-    const sub = supabase.channel('customer_updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards', filter: `customer_id=eq.${customer.id}` }, () => loadDataRef.current())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards', filter: `customer_id=eq.${customer.id}` }, () => loadDataRef.current())
-      .subscribe()
+    // Wrapped in try-catch: WebSocket can fail on Safari iOS ("the operation is insecure")
+    let sub: ReturnType<typeof supabase.channel> | null = null
+    try {
+      sub = supabase.channel('customer_updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards', filter: `customer_id=eq.${customer.id}` }, () => loadDataRef.current())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards', filter: `customer_id=eq.${customer.id}` }, () => loadDataRef.current())
+        .subscribe()
+    } catch (err) {
+      console.warn('[Realtime] WebSocket non disponible:', err)
+    }
 
-    return () => { supabase.removeChannel(sub) }
+    return () => {
+      if (sub) {
+        try { supabase.removeChannel(sub) } catch {}
+      }
+    }
   }, [customer?.id])
 
   const triggerConfetti = async () => {

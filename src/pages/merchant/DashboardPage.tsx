@@ -69,24 +69,32 @@ export default function MerchantDashboard() {
     if (!merchant?.id) return
     loadDashboardData()
 
-    // Subscriptions
-    const channel = supabase.channel('merchant_realtime')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'transactions',
-        filter: `merchant_id=eq.${merchant.id}`
-      }, () => {
-        fetchRecentScans()
-        loadKpis()
-      })
-      .subscribe()
+    // Subscriptions — wrapped in try-catch because WebSocket can fail
+    // on some mobile browsers (Safari iOS) with "the operation is insecure"
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    try {
+      channel = supabase.channel('merchant_realtime')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `merchant_id=eq.${merchant.id}`
+        }, () => {
+          fetchRecentScans()
+          loadKpis()
+        })
+        .subscribe()
+    } catch (err) {
+      console.warn('[Realtime] WebSocket non disponible — mode polling:', err)
+    }
 
     // Countdown logic
     const timer = setInterval(updateCountdown, 1000)
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        try { supabase.removeChannel(channel) } catch {}
+      }
       clearInterval(timer)
     }
   }, [merchant?.id])
