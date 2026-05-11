@@ -203,7 +203,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-display font-bold text-slate-900 mb-3">13. Contact</h2>
             <p className="text-slate-600 leading-relaxed">
               Pour toute question relative aux présentes CGV :<br />
-              Email : <a href="mailto:contact@fydly.com" className="text-fydly-500 hover:underline">contact@fydly.com</a>
+              Email : <a href="mailto:fydlypro@gmail.com" className="text-fydly-500 hover:underline">fydlypro@gmail.com</a>
             </p>
           </section>
         </div>

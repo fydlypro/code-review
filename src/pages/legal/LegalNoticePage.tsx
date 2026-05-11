@@ -42,7 +42,7 @@ export default function LegalNoticePage() {
                 <li><strong>Raison sociale :</strong> Fydly</li>
                 <li><strong>Forme juridique :</strong> Micro-entreprise</li>
                 <li><strong>Responsable de la publication :</strong> Mathys Guena</li>
-                <li><strong>Email :</strong> <a href="mailto:contact@fydly.com" className="text-fydly-500 hover:underline">contact@fydly.com</a></li>
+                <li><strong>Email :</strong> <a href="mailto:fydlypro@gmail.com" className="text-fydly-500 hover:underline">fydlypro@gmail.com</a></li>
                 <li><strong>Site web :</strong> <a href="https://fydly.vercel.app" className="text-fydly-500 hover:underline">fydly.vercel.app</a></li>
               </ul>
             </div>

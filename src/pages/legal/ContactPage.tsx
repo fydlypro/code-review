@@ -53,14 +53,14 @@ export default function ContactPage() {
                 {
                   icon: <Mail size={20} className="text-fydly-500" />,
                   label: 'Email',
-                  value: 'contact@fydly.com',
-                  href: 'mailto:contact@fydly.com',
+                  value: 'fydlypro@gmail.com',
+                  href: 'mailto:fydlypro@gmail.com',
                 },
                 {
                   icon: <MessageCircle size={20} className="text-fydly-500" />,
                   label: 'Support',
                   value: 'Réponse sous 24h',
-                  href: 'mailto:contact@fydly.com',
+                  href: 'mailto:fydlypro@gmail.com',
                 },
                 {
                   icon: <MapPin size={20} className="text-fydly-500" />,

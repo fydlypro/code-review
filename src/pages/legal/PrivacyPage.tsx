@@ -41,7 +41,7 @@ export default function PrivacyPage() {
             <p className="text-slate-600 leading-relaxed">
               Le responsable du traitement des données personnelles collectées via la plateforme Fydly est :<br />
               <strong>Fydly</strong> — Micro-entreprise<br />
-              Email : <a href="mailto:contact@fydly.com" className="text-fydly-500 hover:underline">contact@fydly.com</a>
+              Email : <a href="mailto:fydlypro@gmail.com" className="text-fydly-500 hover:underline">fydlypro@gmail.com</a>
             </p>
           </section>
 
@@ -159,7 +159,7 @@ export default function PrivacyPage() {
             </div>
             <p className="text-slate-600 text-sm mt-4">
               Pour exercer vos droits, contactez-nous à{' '}
-              <a href="mailto:contact@fydly.com" className="text-fydly-500 hover:underline">contact@fydly.com</a>.
+              <a href="mailto:fydlypro@gmail.com" className="text-fydly-500 hover:underline">fydlypro@gmail.com</a>.
               Nous répondons sous 30 jours maximum.
             </p>
           </section>
@@ -189,7 +189,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-display font-bold text-slate-900 mb-3">11. Contact & Réclamation</h2>
             <p className="text-slate-600 leading-relaxed">
               Pour toute question relative à la protection de vos données, contactez-nous à{' '}
-              <a href="mailto:contact@fydly.com" className="text-fydly-500 hover:underline">contact@fydly.com</a>.<br /><br />
+              <a href="mailto:fydlypro@gmail.com" className="text-fydly-500 hover:underline">fydlypro@gmail.com</a>.<br /><br />
               Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la{' '}
               <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) :{' '}
               <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-fydly-500 hover:underline">www.cnil.fr</a>.
