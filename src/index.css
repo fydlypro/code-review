@@ -197,6 +197,116 @@ a:active {
   will-change: transform, opacity;
 }
 
+/* ─── V2 Design tokens CSS vars (miroir des tokens Tailwind) ─── */
+:root {
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #DBEAFE;
+  --primary-ultra: #EFF6FF;
+  --violet: #7C3AED;
+  --gradient-bv: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  --surface: #FAFBFC;
+  --card: #FFFFFF;
+  --border-subtle: #F1F5F9;
+  --border-medium: #E2E8F0;
+  --text: #0F172A;
+  --text-2: #475569;
+  --text-3: #94A3B8;
+  --text-4: #CBD5E1;
+  --success: #059669;
+  --success-light: #D1FAE5;
+  --success-ultra: #ECFDF5;
+  --warning: #D97706;
+  --warning-light: #FEF3C7;
+  --warning-ultra: #FFFBEB;
+  --danger: #DC2626;
+  --danger-light: #FEE2E2;
+  --danger-ultra: #FEF2F2;
+  --sh-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --sh-md: 0 4px 12px rgba(0,0,0,0.06);
+  --sh-lg: 0 12px 40px rgba(0,0,0,0.08);
+  --sh-xl: 0 24px 64px rgba(0,0,0,0.12);
+  --sh-glow: 0 0 40px rgba(37,99,235,0.15);
+  --sh-glow-strong: 0 12px 40px rgba(37,99,235,0.25);
+}
+
+/* ─── Scan line animation (for ScanPage) ─── */
+@keyframes scanLine {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(224px); }
+}
+.animate-scan-line {
+  animation: scanLine 2s linear infinite;
+}
+
+/* ─── Shimmer (for progress bars) ─── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ─── Float animation ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* ─── Dot bounce ─── */
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+/* ─── Glow pulse ─── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+  50%       { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+}
+.animate-glow-pulse {
+  animation: glowPulse 2.4s ease-out infinite;
+}
+
+/* ─── Slide-in-right (mobile drawer) ─── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slideInRight 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+/* ─── Spin reverse (scan processing outer ring) ─── */
+@keyframes spinReverse {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+.animate-spin-reverse {
+  animation: spinReverse 8s linear infinite;
+}
+
+/* ─── Breathe (scan frame) ─── */
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%, -55%) scale(1); }
+  50%       { transform: translate(-50%, -55%) scale(1.015); }
+}
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* ─── Gradient border utility ─── */
+.gradient-border {
+  border: 1px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, rgba(37,99,235,0.4), rgba(124,58,237,0.4));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
 /* ─── Scanner QR (ScanPage) ─── */
 #reader video {
   object-fit: cover !important;

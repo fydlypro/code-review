@@ -1,30 +1,44 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { Settings, Clock, CreditCard, Download, X, LifeBuoy } from 'lucide-react'
+import { Gift, Clock, Scan, User, HelpCircle, Download, X, Zap } from 'lucide-react'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
 import IOSInstallPrompt from './IOSInstallPrompt'
 
 export default function CustomerLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  // isIOS est géré par IOSInstallPrompt — ici on garde uniquement le banner Android/Chrome
   const { canInstall, isStandalone, promptInstall, dismiss } = usePWAInstall()
   const showAndroidBanner = canInstall && !isStandalone
 
   const navItems = [
-    { path: '/customer/card',     icon: CreditCard, label: 'Ma Carte' },
-    { path: '/customer/history',  icon: Clock,      label: 'Historique' },
-    { path: '/customer/support',  icon: LifeBuoy,   label: 'Aide' },
-    { path: '/customer/settings', icon: Settings,   label: 'Profil' },
+    { path: '/customer/card',     icon: Gift,       label: 'Carte' },
+    { path: '/customer/history',  icon: Clock,      label: 'Visites' },
+    { path: '/customer/scan',     icon: Scan,       label: 'Scanner', isCenter: true },
+    { path: '/customer/settings', icon: User,       label: 'Compte' },
+    { path: '/customer/support',  icon: HelpCircle, label: 'Aide' },
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 relative pb-32">
+    <div className="min-h-screen bg-slate-50 relative">
 
-      {/* ── Header / Branding ── */}
-      <header className="fixed top-0 inset-x-0 h-14 bg-white/90 backdrop-blur-xl border-b border-slate-100 z-50 flex items-center justify-center px-4">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[20px] font-display font-bold text-slate-900 leading-none tracking-tight">Fydly</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-fydly-500 mb-0.5 inline-block" />
+      {/* ── Header ── */}
+      <header className="fixed top-0 inset-x-0 h-14 z-50 flex items-center justify-center px-4 border-b border-slate-100"
+        style={{
+          background: 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+      >
+        <div className="flex items-center gap-2">
+          {/* Logo carré */}
+          <div
+            className="w-7 h-7 bg-gradient-bv flex items-center justify-center shrink-0"
+            style={{ borderRadius: 8 }}
+          >
+            <Zap size={14} className="text-white fill-white" />
+          </div>
+          <span className="text-slate-900 font-display font-bold text-[20px] leading-none tracking-tight">
+            Fydly·
+          </span>
         </div>
       </header>
 
@@ -60,45 +74,83 @@ export default function CustomerLayout() {
       <IOSInstallPrompt />
 
       {/* ── Contenu principal ── */}
-      <main className={`px-4 max-w-md mx-auto min-h-[calc(100vh-80px)] animate-fade-in ${showAndroidBanner ? 'pt-36' : 'pt-[58px]'}`}>
+      <main
+        className={`max-w-[480px] mx-auto min-h-screen animate-fade-in ${showAndroidBanner ? 'pt-36' : 'pt-14'}`}
+        style={{ paddingBottom: 90 }}
+      >
         <Outlet />
       </main>
 
-      {/* ── Bottom Navigation ── */}
-      <div
-        className="fixed bottom-0 inset-x-0 z-50 pointer-events-none px-4"
-        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}
+      {/* ── Bottom Navigation (barre plate) ── */}
+      <nav
+        className="fixed bottom-0 inset-x-0 z-50 border-t border-slate-100 flex items-center justify-around"
+        style={{
+          height: 70,
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
       >
-        <nav className="pointer-events-auto max-w-sm mx-auto h-[68px] bg-white/95 backdrop-blur-xl border border-slate-200 shadow-modal rounded-[26px] flex items-stretch px-2 gap-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            const Icon = item.icon
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path
+          const Icon = item.icon
 
+          if (item.isCenter) {
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center justify-center flex-1 h-full gap-1 rounded-[20px] transition-all duration-200 relative active:scale-90
-                  ${isActive ? 'text-fydly-500' : 'text-slate-400 hover:text-slate-600'}`}
+                className="flex flex-col items-center justify-center active:scale-90 transition-transform"
+                aria-label={item.label}
+                style={{ flex: 1 }}
               >
-                {isActive && (
-                  <div className="absolute inset-y-2 inset-x-0.5 bg-fydly-50 rounded-[16px] border border-fydly-100 transition-all duration-300" />
-                )}
-                <Icon
-                  size={20}
-                  className={`relative z-10 transition-all duration-200 ${isActive ? 'scale-110' : 'scale-100'}`}
-                  strokeWidth={isActive ? 2.2 : 1.75}
-                />
-                <span className={`relative z-10 text-[10px] font-semibold leading-none transition-all duration-200
-                  ${isActive ? 'text-fydly-500' : 'text-slate-400'}`}
+                <div
+                  className="bg-gradient-bv shadow-glow-strong flex items-center justify-center"
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    transform: 'translateY(-12px)',
+                  }}
                 >
-                  {item.label}
-                </span>
+                  <Icon size={22} className="text-white" />
+                </div>
               </button>
             )
-          })}
-        </nav>
-      </div>
+          }
+
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="flex flex-col items-center gap-1 active:scale-90 transition-all duration-200"
+              style={{ flex: 1 }}
+            >
+              <Icon
+                size={20}
+                className={isActive ? 'text-fydly-500' : 'text-slate-300'}
+                strokeWidth={isActive ? 2.2 : 1.75}
+              />
+              <span
+                className="font-semibold"
+                style={{
+                  fontSize: 10,
+                  color: isActive ? '#2563EB' : '#CBD5E1',
+                }}
+              >
+                {item.label}
+              </span>
+              {isActive && (
+                <div
+                  className="rounded-full bg-fydly-500"
+                  style={{ width: 4, height: 4, marginTop: -2 }}
+                />
+              )}
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }

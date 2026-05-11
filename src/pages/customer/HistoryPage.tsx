@@ -1,20 +1,44 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase, Transaction, Merchant } from '../../lib/supabase'
-
-// UI Components
-import Badge from '../../components/ui/Badge'
-import Card from '../../components/ui/Card'
-import SkeletonLoader from '../../components/ui/SkeletonLoader'
-import { Clock, Ticket, Gift, History as HistoryIcon, AlertCircle, TrendingUp, RefreshCw } from 'lucide-react'
+import { ChevronLeft, Calendar, RefreshCw } from 'lucide-react'
 
 type PopulatedTransaction = Transaction & { merchants: Pick<Merchant, 'name'> }
 
+type FilterTab = 'all' | 'stamps' | 'rewards'
+
+function groupByDate(transactions: PopulatedTransaction[]): { label: string; items: PopulatedTransaction[] }[] {
+  const groups: Record<string, PopulatedTransaction[]> = {}
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterday = new Date(today.getTime() - 86400000)
+
+  transactions.forEach(t => {
+    const d = new Date(t.created_at)
+    const dDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    let label: string
+    if (dDay.getTime() === today.getTime()) label = "Aujourd'hui"
+    else if (dDay.getTime() === yesterday.getTime()) label = 'Hier'
+    else label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+    if (!groups[label]) groups[label] = []
+    groups[label].push(t)
+  })
+
+  return Object.entries(groups).map(([label, items]) => ({ label, items }))
+}
+
+function getInitials(name: string): string {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+}
+
 export default function HistoryPage() {
   const { customer } = useAuth()
+  const navigate = useNavigate()
   const [transactions, setTransactions] = useState<PopulatedTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<FilterTab>('all')
 
   useEffect(() => {
     if (!customer?.id) return
@@ -35,171 +59,186 @@ export default function HistoryPage() {
     }
   }
 
+  const filtered = transactions.filter(t => {
+    if (activeFilter === 'stamps') return t.type === 'earn'
+    if (activeFilter === 'rewards') return t.type !== 'earn'
+    return true
+  })
+
+  const groups = groupByDate(filtered)
+
+  const TABS: { key: FilterTab; label: string }[] = [
+    { key: 'all', label: 'Toutes' },
+    { key: 'stamps', label: 'Tampons' },
+    { key: 'rewards', label: 'Récompenses' },
+  ]
+
   if (loading) {
     return (
-      <div className="space-y-5 animate-fade-in pt-2">
-        <SkeletonLoader variant="rect" className="w-2/3 h-9 rounded-2xl" />
-        <SkeletonLoader variant="rect" className="w-1/3 h-5 rounded-xl mb-2" />
-        {[1, 2, 3, 4, 5].map(i => (
-          <SkeletonLoader key={i} variant="rect" className="h-[76px] rounded-card" />
-        ))}
+      <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '20px 18px 100px' }}>
+        <div className="animate-pulse space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-slate-200 rounded-[10px]" />
+            <div className="h-7 w-32 bg-slate-200 rounded-full" />
+          </div>
+          <div className="h-10 bg-slate-200 rounded-[12px]" />
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-16 bg-slate-200 rounded-[16px]" />
+          ))}
+        </div>
       </div>
     )
   }
 
-  // Calculer les stats
-  const stampCount = transactions.filter(t => t.type === 'earn').length
-  const giftCount = transactions.filter(t => t.type !== 'earn').length
-
   return (
-    <div className="space-y-6 pb-10 animate-fade-in">
+    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '20px 18px 100px' }}>
 
-      {/* Header */}
-      <div className="flex items-start justify-between pt-1">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-fydly-500/10 rounded-2xl flex items-center justify-center text-fydly-500 border border-fydly-200/50">
-            <HistoryIcon size={22} />
-          </div>
-          <div>
-            <h2 className="text-2xl sm:text-[28px] font-display text-fydly-900 leading-tight">Mon Historique</h2>
-            <p className="text-fydly-400 font-medium text-sm">Tampons & cadeaux</p>
-          </div>
-        </div>
+      {/* HEADER */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            width: 36, height: 36, borderRadius: 10, background: '#fff',
+            border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0
+          }}
+        >
+          <ChevronLeft size={18} style={{ color: '#334155' }} />
+        </button>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', flex: 1 }}>Mes visites</h1>
+        <span style={{
+          fontSize: 12, fontWeight: 600, color: '#64748b',
+          background: '#f1f5f9', borderRadius: 100, padding: '4px 12px'
+        }}>
+          {transactions.length} visite{transactions.length > 1 ? 's' : ''}
+        </span>
       </div>
 
-      {/* Stats rapides (masquées si vide) */}
-      {transactions.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 animate-fade-in">
-          <div className="bg-white rounded-card border border-fydly-100 px-4 py-3.5 flex items-center gap-3 shadow-card">
-            <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-              <Ticket size={18} className="text-green-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-display text-fydly-900 leading-none">{stampCount}</p>
-              <p className="text-fydly-400 text-xs font-semibold mt-0.5">Tampon{stampCount > 1 ? 's' : ''}</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-card border border-fydly-100 px-4 py-3.5 flex items-center gap-3 shadow-card">
-            <div className="w-9 h-9 bg-fydly-50 rounded-xl flex items-center justify-center shrink-0">
-              <Gift size={18} className="text-fydly-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-display text-fydly-900 leading-none">{giftCount}</p>
-              <p className="text-fydly-400 text-xs font-semibold mt-0.5">Cadeau{giftCount > 1 ? 'x' : ''}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* FILTRE TABS */}
+      <div style={{
+        marginTop: 16, display: 'flex', gap: 6, padding: 4,
+        background: '#fff', border: '1px solid #f1f5f9', borderRadius: 12
+      }}>
+        {TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveFilter(tab.key)}
+            style={{
+              flex: 1, padding: '7px 0', fontSize: 13, fontWeight: 600, borderRadius: 8,
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+              background: activeFilter === tab.key ? '#0f172a' : 'transparent',
+              color: activeFilter === tab.key ? '#fff' : '#94a3b8'
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {/* Contenu principal */}
-      {hasError ? (
-        <Card className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-fydly-100 bg-fydly-50/30 shadow-none">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-            <AlertCircle size={28} className="text-red-400" />
+      {/* ERREUR */}
+      {hasError && (
+        <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <span style={{ fontSize: 28 }}>⚠️</span>
           </div>
-          <h3 className="font-bold text-fydly-900 text-base">Erreur de chargement</h3>
-          <p className="text-fydly-400 text-sm mt-1.5 max-w-[220px] leading-relaxed">
-            Impossible de récupérer votre historique.
-          </p>
+          <p style={{ fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>Erreur de chargement</p>
+          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>Impossible de récupérer votre historique.</p>
           <button
             onClick={loadHistory}
-            className="mt-5 flex items-center gap-2 text-fydly-500 font-bold text-sm hover:text-fydly-700 transition-colors"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, color: '#2563EB', fontWeight: 700,
+              fontSize: 13, background: 'none', border: 'none', cursor: 'pointer'
+            }}
           >
             <RefreshCw size={14} />
             Réessayer
           </button>
-        </Card>
-
-      ) : transactions.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-fydly-100 bg-fydly-50/20 shadow-none">
-          <div className="relative mb-5">
-            <div className="w-20 h-20 bg-fydly-50 rounded-full flex items-center justify-center">
-              <TrendingUp size={32} className="text-fydly-200" />
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-fydly-100 rounded-full flex items-center justify-center">
-              <Clock size={14} className="text-fydly-300" />
-            </div>
-          </div>
-          <h3 className="font-bold text-fydly-900 text-lg">Pas encore d'activité</h3>
-          <p className="text-fydly-400 text-sm max-w-[200px] mt-2 leading-relaxed">
-            Scannez votre premier QR code pour voir vos tampons apparaître ici.
-          </p>
-        </Card>
-
-      ) : (
-        <div className="space-y-3">
-
-          {/* Label de section */}
-          <p className="text-[11px] font-bold text-fydly-300 uppercase tracking-widest px-1">
-            {transactions.length} activité{transactions.length > 1 ? 's' : ''}
-          </p>
-
-          {/* Timeline */}
-          <div className="relative">
-            {/* Ligne verticale de timeline */}
-            <div className="absolute left-[27px] top-8 bottom-8 w-px bg-fydly-100 pointer-events-none" />
-
-            <div className="space-y-3">
-              {transactions.map((t, index) => {
-                const date = new Date(t.created_at)
-                const isEarn = t.type === 'earn'
-                const isFirst = index === 0
-
-                return (
-                  <div
-                    key={t.id}
-                    className="flex items-center gap-4 group animate-fade-in"
-                    style={{ animationDelay: `${index * 40}ms` }}
-                  >
-                    {/* Icône timeline */}
-                    <div className={`relative z-10 w-11 h-11 sm:w-[54px] sm:h-[54px] rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105
-                      ${isEarn
-                        ? 'bg-green-50 border border-green-100'
-                        : 'bg-fydly-50 border border-fydly-100'
-                      }`}
-                    >
-                      {isEarn
-                        ? <Ticket size={22} className="text-green-500" />
-                        : <Gift size={22} className="text-fydly-500" />
-                      }
-                      {/* Badge +1 */}
-                      {isEarn && (
-                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-green-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                          +1
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Contenu de la carte */}
-                    <div className="flex-1 bg-white rounded-card border border-fydly-100 px-4 py-3.5 flex items-center justify-between shadow-card hover:shadow-card-hover hover:border-fydly-200 transition-all duration-300 min-w-0">
-                      <div className="min-w-0 space-y-0.5">
-                        <p className="font-bold text-fydly-900 text-base leading-tight truncate">
-                          {t.merchants.name}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-fydly-300 font-semibold text-xs">
-                          <Clock size={11} />
-                          <span>
-                            {date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </span>
-                          <span className="text-fydly-200">·</span>
-                          <span>{date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                      </div>
-
-                      <Badge
-                        variant={isEarn ? 'success' : 'default'}
-                        className="shrink-0 ml-3 h-7 px-2.5 text-[10px] uppercase tracking-widest font-bold rounded-[100px]"
-                      >
-                        {isEarn ? 'Tampon' : 'Cadeau'}
-                      </Badge>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
         </div>
       )}
+
+      {/* ÉTAT VIDE */}
+      {!hasError && filtered.length === 0 && (
+        <div style={{ marginTop: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Calendar size={28} style={{ color: '#93c5fd' }} />
+          </div>
+          <p style={{ fontWeight: 700, color: '#0f172a', fontSize: 16, marginBottom: 6 }}>Aucune visite pour l'instant</p>
+          <p style={{ fontSize: 13, color: '#64748b' }}>Vos visites apparaîtront ici</p>
+        </div>
+      )}
+
+      {/* GROUPES PAR DATE (TIMELINE) */}
+      {!hasError && groups.map(group => (
+        <div key={group.label} style={{ marginTop: 16 }}>
+          {/* Label groupe */}
+          <p style={{
+            fontSize: 11, fontWeight: 700, color: '#cbd5e1', textTransform: 'uppercase',
+            letterSpacing: '0.1em', marginBottom: 10
+          }}>
+            {group.label}
+          </p>
+
+          {/* Timeline verticale */}
+          <div style={{ position: 'relative', paddingLeft: 18 }}>
+            {/* Ligne verticale */}
+            <div style={{
+              position: 'absolute', left: 5, top: 6, bottom: 6,
+              width: 2, background: '#f1f5f9', borderRadius: 2, pointerEvents: 'none'
+            }} />
+
+            {group.items.map(t => {
+              const isEarn = t.type === 'earn'
+              const date = new Date(t.created_at)
+              const merchantInitials = getInitials(t.merchants.name)
+
+              return (
+                <div key={t.id} style={{ position: 'relative', marginBottom: 10 }}>
+                  {/* Dot */}
+                  <div style={{
+                    position: 'absolute', left: -16, top: 14,
+                    width: 12, height: 12, borderRadius: '50%',
+                    background: isEarn ? '#2563EB' : '#FBBF24',
+                    border: '3px solid #f8fafc', zIndex: 1
+                  }} />
+
+                  {/* Card */}
+                  <div style={{
+                    background: '#fff', borderRadius: 16, padding: 12, border: '1px solid #f1f5f9',
+                    display: 'flex', alignItems: 'center', gap: 12
+                  }}>
+                    {/* Avatar initiales */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                      background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, fontWeight: 700, color: '#2563EB'
+                    }}>
+                      {merchantInitials}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <p style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', flex: 1, minWidth: 0 }} className="truncate">
+                          {t.merchants.name}
+                        </p>
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', flexShrink: 0,
+                          background: isEarn ? '#EFF6FF' : '#FEF3C7',
+                          color: isEarn ? '#2563EB' : '#92400e'
+                        }}>
+                          {isEarn ? '⚡ Tampon gagné' : '🎁 Récompense'}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 11, color: '#cbd5e1', fontFamily: 'monospace', marginTop: 2 }}>
+                        {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -3,17 +3,10 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase, LoyaltyCard, Merchant, Reward } from '../../lib/supabase'
 import { isPushEnabled, requestNotificationPermission, registerOneSignalPlayer } from '../../lib/onesignal'
-
-// UI & Business Components
-import StampCard from '../../components/ui/StampCard'
-import RewardScreen from '../../components/customer/RewardScreen'
-import SkeletonLoader from '../../components/ui/SkeletonLoader'
-import Button from '../../components/ui/Button'
-import { Sparkles, Scan, QrCode, Bell, X, Loader2 } from 'lucide-react'
+import { Sparkles, Scan, Bell, X, Loader2, Zap, Star, QrCode } from 'lucide-react'
 
 const NOTIF_PROMPT_KEY = 'fydly_notif_prompt_dismissed'
 
-/** iOS Safari hors mode standalone (PWA) — push impossible sans installation */
 function isIOSSafariWithoutPWA(): boolean {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase())
   if (!isIOS) return false
@@ -53,13 +46,10 @@ export default function CardPage() {
     loadData()
   }, [customer?.id])
 
-  // Prompt notifications — affiché 4s après le chargement si pas encore activées
   useEffect(() => {
     if (!customer?.id) return
     if (localStorage.getItem(NOTIF_PROMPT_KEY)) return
-    // iOS Safari hors PWA : les push sont impossibles — ne pas proposer
     if (isIOSSafariWithoutPWA()) return
-    // Si la permission a déjà été refusée au niveau OS, ne pas afficher la bannière
     if (typeof Notification !== "undefined" && Notification.permission === "denied") return
 
     const timer = setTimeout(async () => {
@@ -76,8 +66,6 @@ export default function CardPage() {
     try {
       const granted = await requestNotificationPermission()
       if (granted && customer?.id) {
-        // Fire-and-forget — l'enregistrement APNs peut prendre 20-30s sur iOS,
-        // on ne bloque pas l'UI pour autant.
         registerOneSignalPlayer(customer.id).catch(() => {})
       }
     } finally {
@@ -108,7 +96,7 @@ export default function CardPage() {
         .select('*')
         .eq('customer_id', customer.id)
         .eq('status', 'available')
-        
+
       if (rewardsError) throw rewardsError
       setRewards(rewardsData || [])
 
@@ -121,11 +109,8 @@ export default function CardPage() {
 
       if (newStampParam === 'true') {
         triggerConfetti()
-        // Supprimer le param via React Router (window.history.replaceState contourne
-        // le state du router → newStampParam restait 'true' indéfiniment)
         setSearchParams(prev => { prev.delete('new_stamp'); return prev }, { replace: true })
 
-        // Auto-ouvrir la récompense si elle vient d'être débloquée
         if (rewardsData && rewardsData.length > 0) {
           const freshReward = merchantParam
             ? (rewardsData as Reward[]).find(r => r.merchant_id === merchantParam)
@@ -141,8 +126,6 @@ export default function CardPage() {
     }
   }, [customer?.id, merchantParam, newStampParam, setSearchParams])
 
-  // Ref toujours à jour vers la dernière version de loadData — utilisée par le
-  // handler realtime pour éviter une closure périmée sans recréer l'abonnement.
   const loadDataRef = useRef(loadData)
   useEffect(() => { loadDataRef.current = loadData }, [loadData])
 
@@ -164,7 +147,7 @@ export default function CardPage() {
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
 
-    confettiIntervalRef.current = setInterval(function() {
+    confettiIntervalRef.current = setInterval(function () {
       const timeLeft = animationEnd - Date.now()
       if (timeLeft <= 0) {
         clearInterval(confettiIntervalRef.current!)
@@ -177,159 +160,375 @@ export default function CardPage() {
     }, 250)
   }
 
+  // Loading state
   if (loading) {
     return (
-      <div className="space-y-8 animate-fade-in">
-        <div className="flex justify-center gap-3">
-          {[1, 2, 3].map(i => <SkeletonLoader key={i} variant="rect" className="w-24 h-10 rounded-xl" />)}
+      <div style={{ background: 'var(--surface, #f8fafc)', minHeight: '100vh', padding: '20px 18px 100px', position: 'relative' }}>
+        <div className="animate-pulse space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <div className="h-3 w-20 bg-slate-200 rounded-full" />
+              <div className="h-7 w-36 bg-slate-200 rounded-full" />
+            </div>
+            <div className="w-10 h-10 bg-slate-200 rounded-[12px]" />
+          </div>
+          <div className="flex gap-2 mt-4">
+            {[1, 2, 3].map(i => <div key={i} className="h-11 w-28 bg-slate-200 rounded-[14px]" />)}
+          </div>
+          <div className="h-72 bg-slate-200 rounded-[24px] mt-4" />
         </div>
-        <SkeletonLoader variant="card" className="h-96" />
-        <SkeletonLoader variant="rect" className="h-32 rounded-3xl" />
       </div>
     )
   }
 
+  // Empty state
   if (cards.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-        <div className="w-24 h-24 bg-fydly-50 rounded-full flex items-center justify-center mb-8 shadow-inner border border-fydly-100">
-          <Sparkles className="text-fydly-500 w-12 h-12" />
+      <div style={{ background: 'var(--surface, #f8fafc)', minHeight: '100vh', padding: '20px 18px 100px', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+          <Sparkles style={{ color: '#2563EB', width: 48, height: 48 }} />
         </div>
-        <h2 className="text-3xl font-display text-fydly-900 mb-3 leading-tight">
+        <h1 style={{ fontSize: 28, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.5px', marginBottom: 12, color: '#0f172a' }}>
           Prêts pour vos premiers tampons ?
-        </h2>
-        <p className="text-fydly-600 mb-10 max-w-sm font-medium leading-relaxed">
-          Scannez le QR code chez votre commerçant partenaire pour commencer à cumuler des tampons.
+        </h1>
+        <p style={{ fontSize: 14, color: '#64748b', textAlign: 'center', marginBottom: 32, maxWidth: 280, lineHeight: 1.6 }}>
+          Scannez le QR code chez votre commerçant.
         </p>
-        <Button onClick={() => navigate('/scan')} className="w-full max-w-[280px] h-12 shadow-lg shadow-fydly-500/20 group">
-          <div className="flex items-center gap-3">
-            <Scan size={20} className="group-hover:scale-110 transition-transform" />
-            <span>Scanner maintenant</span>
-          </div>
-        </Button>
+        <button
+          onClick={() => navigate('/scan')}
+          className="animate-pulse-glow"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(135deg, #2563EB, #7C3AED)', color: '#fff',
+            borderRadius: 12, padding: '0 28px', height: 52, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(37,99,235,0.35)'
+          }}
+        >
+          <Scan size={20} />
+          Scanner maintenant
+        </button>
       </div>
     )
   }
 
   const activeCard = cards[activeCardIndex]
   const merchantReward = rewards.find(r => r.merchant_id === activeCard.merchant_id)
+  const earned = activeCard.balance
+  const total = activeCard.merchants.reward_threshold
+  const progressPct = Math.min((earned / total) * 100, 100)
+  const remaining = Math.max(total - earned, 0)
+  const initials = customer?.first_name?.[0]?.toUpperCase() || 'C'
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '20px 18px 100px', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Banner notifications */}
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <p style={{ fontSize: 11, color: '#cbd5e1', fontWeight: 500 }}>Bonjour,</p>
+          <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: 6 }}>
+            {customer?.first_name || 'Ami'} <span>👋</span>
+          </p>
+        </div>
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, background: '#2563EB', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16
+        }}>
+          {initials}
+        </div>
+      </div>
+
+      {/* NOTIFICATION BANNER */}
       {showNotifBanner && (
-        <div className="bg-fydly-900 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
-          <div className="w-9 h-9 bg-fydly-500 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-fydly-500/30">
+        <div style={{
+          background: '#0f172a', color: '#fff', borderRadius: 16, padding: '12px 14px',
+          marginTop: 16, display: 'flex', alignItems: 'center', gap: 12
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, background: '#2563EB',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(37,99,235,0.4)'
+          }}>
             {notifLoading
-              ? <Loader2 size={18} className="text-white animate-spin" />
-              : <Bell size={18} className="text-white" />
+              ? <Loader2 size={16} style={{ color: '#fff' }} className="animate-spin" />
+              : <Bell size={16} style={{ color: '#fff' }} />
             }
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-sm leading-tight">Activez les notifications</p>
-            <p className="text-white/60 text-xs mt-0.5">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>Activez les notifications</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>
               {notifLoading ? "Demande en cours…" : "Recevez vos récompenses en temps réel"}
             </p>
           </div>
           <button
             onClick={handleEnableNotifs}
             disabled={notifLoading}
-            className="bg-fydly-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 active:scale-95 transition-transform disabled:opacity-60 disabled:cursor-wait"
+            style={{
+              borderRadius: 100, background: '#2563EB', color: '#fff', fontSize: 11, fontWeight: 700,
+              padding: '6px 12px', border: 'none', cursor: 'pointer', flexShrink: 0
+            }}
           >
             {notifLoading ? "…" : "Activer"}
           </button>
           {!notifLoading && (
-            <button onClick={dismissNotifBanner} className="text-white/40 shrink-0 active:scale-90 transition-transform">
+            <button onClick={dismissNotifBanner} style={{ color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
               <X size={18} />
             </button>
           )}
         </div>
       )}
 
-      {/* Onglets commerçants + Scanner */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {cards.length > 1 && cards.map((card, idx) => (
-          <button
-            key={card.id}
-            onClick={() => setActiveCardIndex(idx)}
-            className={`px-5 py-2.5 rounded-[12px] text-sm font-bold whitespace-nowrap transition-all duration-200 border-2 ${
-              idx === activeCardIndex
-                ? 'bg-fydly-900 border-fydly-900 text-white shadow-card'
-                : 'bg-white border-fydly-100 text-fydly-700 hover:border-fydly-300'
-            }`}
-          >
-            {card.merchants.name}
-          </button>
-        ))}
+      {/* ONGLETS COMMERÇANTS */}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginTop: 16, paddingBottom: 4, scrollSnapType: 'x mandatory' }}>
+        {cards.map((card, idx) => {
+          const hasReward = rewards.some(r => r.merchant_id === card.merchant_id)
+          const isActive = idx === activeCardIndex
+          return (
+            <button
+              key={card.id}
+              onClick={() => setActiveCardIndex(idx)}
+              style={{
+                height: 44, borderRadius: 14, padding: '0 14px', fontSize: 12, fontWeight: 700,
+                whiteSpace: 'nowrap', border: '2px solid', cursor: 'pointer', flexShrink: 0,
+                scrollSnapAlign: 'start', transition: 'all 0.2s',
+                background: isActive ? '#0f172a' : '#fff',
+                color: isActive ? '#fff' : '#334155',
+                borderColor: isActive ? '#0f172a' : '#e2e8f0',
+                boxShadow: isActive ? '0 2px 12px rgba(0,0,0,0.12)' : 'none'
+              }}
+            >
+              {hasReward ? '🎁 ' : ''}{card.merchants.name}
+            </button>
+          )
+        })}
         <button
           onClick={() => navigate('/scan')}
-          className="px-4 py-2.5 rounded-[12px] text-sm font-bold whitespace-nowrap transition-all duration-200 border-2 bg-fydly-500 border-fydly-500 text-white shadow-card flex items-center gap-2 active:scale-[0.98] hover:bg-fydly-600"
+          className="animate-pulse-glow"
+          style={{
+            height: 44, borderRadius: 14, padding: '0 14px', fontSize: 12, fontWeight: 700,
+            whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', flexShrink: 0,
+            background: 'linear-gradient(135deg, #2563EB, #7C3AED)', color: '#fff',
+            display: 'flex', alignItems: 'center', gap: 6,
+            boxShadow: '0 4px 14px rgba(37,99,235,0.35)'
+          }}
         >
-          <QrCode size={15} />
+          <Scan size={14} />
           Scanner
         </button>
       </div>
 
-      {/* Animation +1 Tampon */}
+      {/* NEW STAMP BANNER */}
       {newStampParam === 'true' && (
-        <div className="bg-fydly-500 rounded-[12px] px-6 py-4 flex items-center gap-4 shadow-card animate-bounce-stamp">
-          <span className="text-3xl">🎉</span>
-          <div>
-            <p className="text-white font-display text-xl leading-tight">+1 Tampon !</p>
-            <p className="text-white/80 text-sm font-medium">Bien joué, continuez comme ça !</p>
+        <div
+          className="animate-bounce-stamp"
+          style={{
+            marginTop: 12, padding: 16, borderRadius: 16, overflow: 'hidden', position: 'relative',
+            background: 'linear-gradient(135deg, #2563EB, #7C3AED)', color: '#fff',
+            display: 'flex', alignItems: 'center', gap: 12
+          }}
+        >
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 1px, transparent 1px)',
+            backgroundSize: '24px 24px'
+          }} />
+          <span style={{ fontSize: 28, position: 'relative' }}>🎉</span>
+          <div style={{ position: 'relative' }}>
+            <p style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.2 }}>➕1 Tampon !</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>Bien joué, continuez !</p>
           </div>
         </div>
       )}
 
-      {/* Récompense disponible */}
+      {/* LOYALTY CARD */}
+      <div style={{
+        marginTop: 16, padding: 22, borderRadius: 24, border: '1px solid #f1f5f9', overflow: 'hidden',
+        background: 'linear-gradient(180deg, #ffffff 0%, rgba(239,246,255,0.4) 100%)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
+      }}>
+        {/* Card Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#cbd5e1', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+              CARTE FIDÉLITÉ
+            </p>
+            <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', color: '#0f172a', marginTop: 4, lineHeight: 1.2 }}>
+              {activeCard.merchants.name}
+            </p>
+            {activeCard.merchants.sector && (
+              <span style={{
+                display: 'inline-block', marginTop: 6, fontSize: 11, fontWeight: 600, color: '#64748b',
+                background: '#f1f5f9', borderRadius: 100, padding: '3px 10px'
+              }}>
+                {activeCard.merchants.sector}
+              </span>
+            )}
+          </div>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, background: '#2563EB', color: '#fff', flexShrink: 0,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(37,99,235,0.35)'
+          }}>
+            <span style={{ fontSize: 18, fontWeight: 700, fontFamily: 'monospace', lineHeight: 1 }}>{earned}</span>
+            <span style={{ fontSize: 9, opacity: 0.7, lineHeight: 1, marginTop: 2 }}>/{total}</span>
+          </div>
+        </div>
+
+        {/* Grille tampons */}
+        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+          {Array.from({ length: total }).map((_, i) => {
+            const obtained = i < earned
+            const isLastObtained = obtained && i === earned - 1 && newStampParam === 'true'
+            return (
+              <div
+                key={i}
+                style={{
+                  aspectRatio: '1',
+                  borderRadius: 14,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  ...(obtained
+                    ? {
+                      background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                      boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+                      outline: isLastObtained ? '3px solid rgba(37,99,235,0.3)' : 'none',
+                      outlineOffset: isLastObtained ? 2 : 0
+                    }
+                    : {
+                      background: '#fff',
+                      border: '2px dashed #e2e8f0'
+                    }
+                  )
+                }}
+              >
+                {obtained && <Zap size={20} style={{ color: '#fff', fill: '#fff' }} />}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Barre de progression */}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ height: 8, background: '#f1f5f9', borderRadius: 100, overflow: 'hidden' }}>
+            <div
+              className={progressPct >= 80 ? 'animate-shimmer' : ''}
+              style={{
+                height: '100%', width: `${progressPct}%`,
+                background: 'linear-gradient(90deg, #60A5FA, #2563EB)',
+                borderRadius: 100, transition: 'width 0.5s ease'
+              }}
+            />
+          </div>
+          <p style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>
+            {remaining === 0
+              ? 'Récompense disponible !'
+              : `Plus que ${remaining} tampon${remaining > 1 ? 's' : ''} pour votre récompense !`}
+          </p>
+        </div>
+
+        {/* Bandeau récompense */}
+        {activeCard.merchants.reward_description && (
+          <div style={{
+            marginTop: 12, padding: 12, background: '#EFF6FF', border: '1px solid #BFDBFE',
+            borderRadius: 14, display: 'flex', alignItems: 'center', gap: 8
+          }}>
+            <Star size={16} style={{ color: '#2563EB', fill: '#2563EB', flexShrink: 0 }} />
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1E40AF' }}>
+              Récompense : {activeCard.merchants.reward_description}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* BOUTON RÉCOMPENSE */}
       {merchantReward && !showReward && (
         <button
           onClick={() => setShowReward(merchantReward)}
-          className="w-full bg-fydly-900 rounded-[12px] p-5 text-white flex items-center justify-between active:scale-[0.98] transition-all duration-200 group shadow-modal"
+          className="animate-pulse-glow"
+          style={{
+            width: '100%', marginTop: 12, padding: 20, borderRadius: 16, border: 'none', cursor: 'pointer',
+            background: '#0f172a', color: '#fff', position: 'relative', overflow: 'hidden', textAlign: 'left'
+          }}
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-[12px] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-200">
-              🎁
-            </div>
-            <div className="text-left">
-              <p className="font-bold text-base leading-tight">🎁 Votre récompense est prête !</p>
-              <p className="text-white/60 text-sm font-medium mt-0.5">Appuyez pour afficher votre cadeau</p>
-            </div>
-          </div>
-          <Sparkles className="text-fydly-400 w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" />
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(circle at 80% 50%, rgba(124,58,237,0.3) 0%, transparent 60%), radial-gradient(circle at 20% 50%, rgba(37,99,235,0.2) 0%, transparent 60%)'
+          }} />
+          <p style={{ fontSize: 15, fontWeight: 700, position: 'relative' }}>🎁 Votre récompense est prête !</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 4, position: 'relative' }}>
+            Appuyez pour afficher votre cadeau
+          </p>
         </button>
       )}
 
-      {/* Carte fidélité */}
-      <div className={`transition-all duration-300 ${merchantReward ? 'opacity-75 scale-[0.99]' : ''}`}>
-        <StampCard
-          merchantName={activeCard.merchants.name}
-          sector={activeCard.merchants.sector ?? undefined}
-          balance={activeCard.balance}
-          threshold={activeCard.merchants.reward_threshold}
-          newStamp={newStampParam === 'true'}
-          rewardDescription={activeCard.merchants.reward_description ?? undefined}
-        />
-      </div>
-
-      {/* Lien historique */}
+      {/* LIEN HISTORIQUE */}
       <button
         onClick={() => navigate('/customer/history')}
-        className="w-full text-center text-fydly-500 text-sm font-semibold hover:text-fydly-700 transition-colors py-2"
+        style={{
+          display: 'block', width: '100%', textAlign: 'center', marginTop: 20,
+          color: '#2563EB', fontSize: 13, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 8
+        }}
       >
         Voir mes visites →
       </button>
 
-      {/* Écran récompense */}
+      {/* REWARD OVERLAY */}
       {showReward && (
-        <RewardScreen
-          rewardQrToken={showReward.reward_qr_token || ''}
-          merchantName={activeCard.merchants.name || ''}
-          rewardDescription={activeCard.merchants.reward_description || 'Votre récompense'}
-          expiresAt={new Date(showReward.expires_at).toLocaleDateString()}
-          onClose={() => setShowReward(null)}
-        />
+        <div style={{
+          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 32, boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
+            padding: 28, textAlign: 'center', maxWidth: 340, width: '100%'
+          }}>
+            {/* Cercle doré */}
+            <div style={{
+              width: 88, height: 88, borderRadius: '50%', margin: '0 auto 16px',
+              background: 'linear-gradient(135deg, #FBBF24, #F59E0B)',
+              boxShadow: '0 8px 24px rgba(251,191,36,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44
+            }}>
+              🎁
+            </div>
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', marginBottom: 8 }}>Félicitations ! 🎉</h2>
+            <p style={{ fontSize: 16, fontWeight: 700, color: '#2563EB', marginBottom: 16 }}>
+              {activeCard.merchants.reward_description || 'Votre récompense'}
+            </p>
+
+            {/* QR Code zone */}
+            <div style={{
+              width: 160, height: 160, margin: '0 auto 12px', border: '2px solid #e2e8f0',
+              borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', color: '#cbd5e1'
+            }}>
+              <QrCode size={80} style={{ color: '#0f172a' }} />
+            </div>
+            <p style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 12 }}>
+              Montrez ce QR Code au commerçant
+            </p>
+
+            {/* Expiration */}
+            {showReward.expires_at && (
+              <span style={{
+                display: 'inline-block', fontSize: 12, fontWeight: 600, color: '#92400e',
+                background: '#FEF3C7', borderRadius: 100, padding: '4px 12px', marginBottom: 16
+              }}>
+                ⏱ Expire le {new Date(showReward.expires_at).toLocaleDateString('fr-FR')}
+              </span>
+            )}
+
+            <button
+              onClick={() => setShowReward(null)}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 12, border: '2px solid #e2e8f0',
+                background: '#fff', color: '#64748b', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                marginTop: 4
+              }}
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
