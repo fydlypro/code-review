@@ -1,16 +1,13 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ShieldCheck, Store, TrendingUp, Users, Zap } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../contexts/ToastContext'
-import { useAuth } from '../../contexts/AuthContext'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 
 export default function MerchantLogin() {
-  const navigate = useNavigate()
   const toast = useToast()
-  const { refreshMerchant } = useAuth()
 
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
@@ -29,9 +26,9 @@ export default function MerchantLogin() {
       if (error) throw error
 
       if (data.user) {
-        await refreshMerchant()
         toast.success('Connexion réussie')
-        navigate('/merchant/dashboard')
+        // La redirection est gérée automatiquement par MerchantPublicRoute
+        // dès que onAuthStateChange met à jour session + merchant dans le contexte
       }
     } catch (err: any) {
       console.error(err)

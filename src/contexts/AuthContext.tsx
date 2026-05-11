@@ -206,12 +206,20 @@ export function useAuth() {
 // =========================================================
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-fydly-50">
-      <div className="flex flex-col items-center gap-4">
-        <div className="text-3xl font-serif font-bold text-fydly-900">
-          Fydly<span className="text-fydly-500">·</span>
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-5">
+        <div className="w-14 h-14 bg-gradient-bv rounded-2xl flex items-center justify-center shadow-glow-blue">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M13 2L4.09344 12.6879C3.74463 13.1064 3.57023 13.3157 3.56756 13.4925C3.56524 13.6461 3.63372 13.7923 3.75324 13.8889C3.89073 14 4.16316 14 4.70802 14H12L11 22L19.9066 11.3121C20.2554 10.8936 20.4298 10.6843 20.4324 10.5075C20.4348 10.3539 20.3663 10.2077 20.2468 10.1111C20.1093 10 19.8368 10 19.292 10H12L13 2Z" />
+          </svg>
         </div>
-        <div className="spinner border-fydly-500 w-6 h-6" />
+        <div className="text-center">
+          <p className="font-display text-xl font-bold text-slate-900">
+            Fydly<span className="text-fydly-500">·</span>
+          </p>
+          <p className="text-slate-400 text-sm font-medium mt-1">Chargement en cours…</p>
+        </div>
+        <div className="spinner border-fydly-500 w-5 h-5" />
       </div>
     </div>
   )
