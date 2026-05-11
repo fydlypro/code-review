@@ -43,13 +43,16 @@ import TermsPage from './pages/legal/TermsPage'
 import LegalNoticePage from './pages/legal/LegalNoticePage'
 import ContactPage from './pages/legal/ContactPage'
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
   constructor(props: { children: ReactNode }) {
     super(props)
-    this.state = { hasError: false }
+    this.state = { hasError: false, error: null }
   }
-  static getDerivedStateFromError() {
-    return { hasError: true }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+  componentDidCatch(error: Error, info: any) {
+    console.error('[ErrorBoundary]', error, info?.componentStack)
   }
   render() {
     if (this.state.hasError) {
@@ -58,13 +61,29 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
           <div className="text-center max-w-sm">
             <div className="text-4xl mb-4">⚠️</div>
             <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Une erreur est survenue</h1>
-            <p className="text-slate-500 text-sm mb-6">L'application a rencontré un problème inattendu.</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-fydly-500 text-white font-bold px-6 py-3 rounded-btn hover:bg-fydly-600 transition-colors"
-            >
-              Recharger la page
-            </button>
+            <p className="text-slate-500 text-sm mb-4">L'application a rencontré un problème inattendu.</p>
+            {this.state.error && (
+              <p className="text-red-500 text-xs bg-red-50 rounded-lg p-3 mb-4 text-left font-mono break-all">
+                {this.state.error.message}
+              </p>
+            )}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null })
+                  window.location.href = '/'
+                }}
+                className="bg-fydly-500 text-white font-bold px-6 py-3 rounded-btn hover:bg-fydly-600 transition-colors"
+              >
+                Retour à l'accueil
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="text-slate-500 font-semibold px-6 py-3 rounded-btn hover:bg-slate-50 transition-colors text-sm"
+              >
+                Recharger la page
+              </button>
+            </div>
           </div>
         </div>
       )
