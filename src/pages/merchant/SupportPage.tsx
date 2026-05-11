@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Mail, MessageCircle, Clock, ChevronRight, LifeBuoy, BookOpen, ExternalLink, ChevronDown } from 'lucide-react'
-import Card from '../../components/ui/Card'
+import { Mail, MessageCircle, Clock, ChevronDown, BookOpen, ExternalLink, Video, LifeBuoy } from 'lucide-react'
 
 const FAQ = [
   {
@@ -24,8 +23,8 @@ const FAQ = [
     a: "Allez dans Abonnement et choisissez le plan qui correspond à votre activité. Le paiement est sécurisé via Stripe. Votre abonnement est actif immédiatement après le paiement.",
   },
   {
-    q: "Comment exporter la liste de mes clients ?",
-    a: "Dans la section Clients, utilisez le bouton « Exporter CSV » en haut à droite. Vous obtiendrez un fichier avec prénom, email, téléphone, tampons et date d'inscription.",
+    q: "Comment envoyer une campagne push à mes clients ?",
+    a: "Dans la section Campagnes, rédigez votre message, choisissez votre audience (Tous, Actifs, Inactifs, Premium), puis cliquez sur Envoyer. Les notifications sont délivrées via OneSignal.",
   },
   {
     q: "Les notifications push ne sont pas envoyées.",
@@ -33,26 +32,63 @@ const FAQ = [
   },
 ]
 
+const QUICK_ACTIONS = [
+  {
+    icon: BookOpen,
+    label: 'Documentation',
+    desc: 'Guides complets et références',
+    href: 'https://docs.fydly.fr',
+    external: true,
+    color: 'bg-blue-50 text-fydly-500',
+    hoverBorder: 'hover:border-fydly-200',
+  },
+  {
+    icon: MessageCircle,
+    label: 'Chat WhatsApp',
+    desc: 'Réponse prioritaire sous 4h',
+    href: 'https://wa.me/33789483883?text=Bonjour, je suis commerçant sur Fydly et j\'ai une question.',
+    external: true,
+    color: 'bg-emerald-50 text-emerald-600',
+    hoverBorder: 'hover:border-emerald-200',
+  },
+  {
+    icon: Video,
+    label: 'Tutoriels vidéo',
+    desc: 'Prise en main pas à pas',
+    href: 'https://docs.fydly.fr/tutorials',
+    external: true,
+    color: 'bg-violet-50 text-violet-600',
+    hoverBorder: 'hover:border-violet-200',
+  },
+  {
+    icon: Mail,
+    label: 'Email support',
+    desc: 'fydlypro@gmail.com',
+    href: 'mailto:fydlypro@gmail.com?subject=Support commerçant Fydly',
+    external: false,
+    color: 'bg-amber-50 text-amber-600',
+    hoverBorder: 'hover:border-amber-200',
+  },
+]
+
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
-
   return (
-    <div className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${open ? 'border-fydly-200 shadow-card' : 'border-fydly-100 shadow-sm'}`}>
+    <div className={`bg-white border transition-all duration-200 overflow-hidden ${open ? 'border-fydly-200 shadow-card' : 'border-slate-100 shadow-sm'}`} style={{ borderRadius: 16 }}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4 hover:bg-fydly-50/40 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 text-left gap-4 hover:bg-slate-50/60 transition-colors"
       >
-        <span className={`font-semibold text-sm leading-snug flex-1 transition-colors ${open ? 'text-fydly-900' : 'text-fydly-700'}`}>
+        <span className={`font-semibold text-sm leading-snug flex-1 transition-colors ${open ? 'text-slate-900' : 'text-slate-700'}`}>
           {q}
         </span>
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${open ? 'bg-fydly-500 text-white' : 'bg-fydly-50 text-fydly-400'}`}>
-          <ChevronDown size={15} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${open ? 'bg-fydly-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
+          <ChevronDown size={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </div>
       </button>
-
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-fydly-50">
-          <p className="text-fydly-600 text-sm leading-relaxed font-medium">{a}</p>
+        <div className="px-5 pb-5 pt-1 border-t border-slate-100">
+          <p className="text-slate-500 text-sm leading-relaxed font-medium">{a}</p>
         </div>
       )}
     </div>
@@ -61,119 +97,56 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 export default function MerchantSupportPage() {
   return (
-    <div className="animate-fade-in pb-16 max-w-2xl mx-auto px-2 sm:px-0">
+    <div className="animate-fade-in pb-16 max-w-2xl mx-auto space-y-8">
 
-      {/* Page Header */}
-      <div className="flex items-center gap-4 mb-10">
-        <div className="w-12 h-12 bg-fydly-500 rounded-xl flex items-center justify-center shadow-lg shadow-fydly-500/25 shrink-0">
-          <LifeBuoy size={24} className="text-white" />
+      {/* ── HEADER ── */}
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md shrink-0" style={{ background: 'linear-gradient(135deg, #2563EB, #7C3AED)' }}>
+          <LifeBuoy size={22} className="text-white" />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl font-display text-fydly-900 leading-tight">Support</h1>
-          <p className="text-fydly-400 font-medium text-sm mt-0.5">
-            Une question ou un problème technique ? On est là pour vous.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-display text-slate-900 leading-tight">Support</h1>
+          <p className="text-slate-400 font-medium text-sm mt-0.5">Une question ou un problème ? On est là.</p>
         </div>
       </div>
 
-      {/* ── Contact Section ── */}
-      <section className="mb-10">
-        <p className="text-[10px] font-bold text-fydly-400 uppercase tracking-widest mb-3">
-          Nous contacter
-        </p>
-
-        <div className="space-y-3">
-          {/* Email */}
-          <a
-            href="mailto:fydlypro@gmail.com?subject=Support commerçant Fydly"
-            className="flex items-center gap-4 bg-white rounded-2xl px-5 py-4 shadow-card border border-fydly-100 hover:border-fydly-300 hover:shadow-card-hover active:scale-[0.98] transition-all duration-200 group"
-          >
-            <div className="w-11 h-11 bg-fydly-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-fydly-100 transition-colors">
-              <Mail size={20} className="text-fydly-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-fydly-900 font-bold text-sm">Email</p>
-              <p className="text-fydly-400 text-xs font-medium mt-0.5 truncate">fydlypro@gmail.com</p>
-            </div>
-            <div className="flex items-center gap-1.5 text-fydly-300 group-hover:text-fydly-500 transition-colors">
-              <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:block">Écrire</span>
-              <ChevronRight size={15} />
-            </div>
-          </a>
-
-          {/* WhatsApp */}
-          <a
-            href="https://wa.me/33789483883?text=Bonjour, je suis commerçant sur Fydly et j'ai une question."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-4 bg-white rounded-2xl px-5 py-4 shadow-card border border-fydly-100 hover:border-green-200 hover:shadow-card-hover active:scale-[0.98] transition-all duration-200 group"
-          >
-            <div className="w-11 h-11 bg-green-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-green-100 transition-colors">
-              <MessageCircle size={20} className="text-green-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-fydly-900 font-bold text-sm">WhatsApp</p>
-                <span className="inline-block bg-green-50 text-green-700 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border border-green-100">
-                  Prioritaire
-                </span>
-              </div>
-              <p className="text-fydly-400 text-xs font-medium mt-0.5">Réponse rapide pour les commerçants</p>
-            </div>
-            <div className="flex items-center gap-1.5 text-fydly-300 group-hover:text-green-500 transition-colors">
-              <ExternalLink size={14} />
-            </div>
-          </a>
-
-          {/* Hours */}
-          <div className="flex items-center gap-4 bg-fydly-50/60 rounded-2xl px-5 py-4 border border-fydly-100">
-            <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-              <Clock size={20} className="text-fydly-400" />
-            </div>
-            <div>
-              <p className="text-fydly-700 font-bold text-sm">Horaires de support</p>
-              <p className="text-fydly-400 text-xs font-medium mt-0.5">
-                Lun – Ven · 9h – 18h · Réponse sous 4h ouvrées
-              </p>
-            </div>
-          </div>
+      {/* ── QUICK ACTIONS GRILLE 2×2 ── */}
+      <section>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Accès rapide</p>
+        <div className="grid grid-cols-2 gap-3">
+          {QUICK_ACTIONS.map(action => {
+            const Icon = action.icon
+            return (
+              <a
+                key={action.label}
+                href={action.href}
+                target={action.external ? '_blank' : undefined}
+                rel={action.external ? 'noopener noreferrer' : undefined}
+                className={`flex flex-col gap-3 bg-white p-5 border border-slate-100 ${action.hoverBorder} shadow-sm hover:shadow-card transition-all active:scale-[0.97] group`}
+                style={{ borderRadius: 20 }}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action.color}`}>
+                  <Icon size={19} />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">{action.label}</p>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5 leading-snug">{action.desc}</p>
+                </div>
+                {action.external && (
+                  <ExternalLink size={12} className="text-slate-300 group-hover:text-slate-500 transition-colors mt-auto self-end" />
+                )}
+              </a>
+            )
+          })}
         </div>
       </section>
 
-      {/* ── Documentation Card ── */}
-      <section className="mb-10">
-        <Card className="border border-fydly-100/70 shadow-card bg-fydly-900 text-white overflow-hidden relative">
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-fydly-500/15 rounded-full blur-[50px] pointer-events-none" />
-          <div className="relative z-10 flex items-center gap-4 p-5">
-            <div className="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
-              <BookOpen size={20} className="text-fydly-300" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-sm text-white">Documentation complète</p>
-              <p className="text-fydly-400 text-xs font-medium mt-0.5">Guides, tutoriels et références API Fydly</p>
-            </div>
-            <a
-              href="https://docs.fydly.fr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-fydly-500 hover:bg-fydly-400 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0"
-            >
-              Accéder
-              <ExternalLink size={13} />
-            </a>
-          </div>
-        </Card>
-      </section>
-
-      {/* ── FAQ Section ── */}
+      {/* ── FAQ ACCORDION ── */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <BookOpen size={13} className="text-fydly-400" />
-          <p className="text-[10px] font-bold text-fydly-400 uppercase tracking-widest">
-            Questions fréquentes
-          </p>
+          <BookOpen size={13} className="text-slate-400" />
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Questions fréquentes</p>
         </div>
-
         <div className="space-y-2">
           {FAQ.map((item, i) => (
             <FaqItem key={i} q={item.q} a={item.a} />
@@ -181,9 +154,60 @@ export default function MerchantSupportPage() {
         </div>
       </section>
 
+      {/* ── CARD CONTACT GRADIENT DARK ── */}
+      <section>
+        <div className="relative overflow-hidden text-white p-6 sm:p-8" style={{ borderRadius: 20, background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%)' }}>
+          {/* Déco */}
+          <div className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.2), transparent)' }} />
+          <div className="absolute -left-6 -top-6 w-32 h-32 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.15), transparent)' }} />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <Mail size={18} className="text-blue-300" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-base">Contacter le support</h3>
+                <p className="text-white/50 text-xs font-medium">Réponse garantie sous 4h ouvrées</p>
+              </div>
+            </div>
+
+            <p className="text-white/70 text-sm font-medium leading-relaxed mb-5">
+              Notre équipe est disponible du lundi au vendredi, 9h–18h. Pour les urgences, utilisez WhatsApp — nous répondons plus vite.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href="mailto:support@fydly.app?subject=Support commerçant Fydly"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-white border border-white/20 hover:bg-white/10 transition-all"
+                style={{ minHeight: 44 }}
+              >
+                <Mail size={15} />
+                support@fydly.app
+              </a>
+              <a
+                href="https://wa.me/33789483883?text=Bonjour, je suis commerçant sur Fydly."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-slate-900 bg-white hover:bg-slate-100 transition-all"
+                style={{ minHeight: 44 }}
+              >
+                <MessageCircle size={15} className="text-emerald-600" />
+                WhatsApp prioritaire
+              </a>
+            </div>
+
+            <div className="mt-4 flex items-center gap-2 text-white/30 text-xs font-medium">
+              <Clock size={12} />
+              Lun – Ven · 9h – 18h
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <p className="text-center text-fydly-300 text-xs font-medium pt-12">
-        Fydly · Support commerçant · v1.0
+      <p className="text-center text-slate-300 text-xs font-medium pt-4">
+        Fydly · Support commerçant · v2.0
       </p>
     </div>
   )
