@@ -14,7 +14,53 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     flowType: "pkce",
   },
+  realtime: {
+    params: {
+      eventsPerSecond: 2,
+    },
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'fydly-web',
+    },
+  },
 });
+
+// ── Global WebSocket error handler ──────────────────────────────────────────
+// Safari iOS can throw unhandled "The operation is insecure" errors from
+// WebSocket connections. Catch them globally to prevent app crashes.
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = String(event.reason?.message || event.reason || '');
+    if (
+      msg.includes('insecure') ||
+      msg.includes('WebSocket') ||
+      msg.includes('websocket') ||
+      msg.includes('object can not be found')
+    ) {
+      console.warn('[Supabase] WebSocket error suppressed:', msg);
+      event.preventDefault();
+    }
+  });
+
+  // Also catch synchronous WebSocket errors
+  const origError = window.onerror;
+  window.onerror = function (message, source, lineno, colno, error) {
+    const msg = String(message || '');
+    if (
+      msg.includes('insecure') ||
+      msg.includes('WebSocket') ||
+      msg.includes('websocket')
+    ) {
+      console.warn('[Supabase] WebSocket error suppressed:', msg);
+      return true; // Prevent default error handling
+    }
+    if (origError) {
+      return origError.call(this, message, source, lineno, colno, error);
+    }
+    return false;
+  };
+}
 
 // ── Types TypeScript ───────────────────────────────────────────────────────────
 
