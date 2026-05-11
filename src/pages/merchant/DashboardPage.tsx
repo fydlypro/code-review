@@ -470,18 +470,6 @@ export default function MerchantDashboard() {
 
               {/* Right info column */}
               <div className="flex-1 min-w-0 space-y-3">
-                {/* URL box */}
-                <div>
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-[0.1em] mb-1">
-                    LIEN COURT
-                  </p>
-                  <div className="bg-slate-50 rounded-[8px] px-2.5 py-2 border border-slate-100">
-                    <span className="font-mono text-[12px] text-slate-600 break-all line-clamp-2">
-                      {activeToken ? generateClientUrl() : '—'}
-                    </span>
-                  </div>
-                </div>
-
                 {/* Countdown */}
                 <div>
                   <p className="text-[12px] font-semibold text-slate-500 mb-1.5">
