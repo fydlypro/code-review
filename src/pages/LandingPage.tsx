@@ -486,9 +486,10 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-6 text-xs font-semibold text-slate-400">
-              <a href="#" className="hover:text-white transition-colors">Confidentialité</a>
-              <a href="#" className="hover:text-white transition-colors">CGV</a>
-              <a href="mailto:contact@fydly.com" className="hover:text-white transition-colors">Contact</a>
+              <a onClick={() => navigate('/privacy')} className="hover:text-white transition-colors cursor-pointer">Confidentialité</a>
+              <a onClick={() => navigate('/terms')} className="hover:text-white transition-colors cursor-pointer">CGV</a>
+              <a onClick={() => navigate('/legal')} className="hover:text-white transition-colors cursor-pointer">Mentions légales</a>
+              <a onClick={() => navigate('/contact')} className="hover:text-white transition-colors cursor-pointer">Contact</a>
             </div>
           </div>
 

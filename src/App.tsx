@@ -37,6 +37,12 @@ import History from './pages/customer/HistoryPage'
 import Settings from './pages/customer/SettingsPage'
 import Support from './pages/customer/SupportPage'
 
+// Legal pages
+import PrivacyPage from './pages/legal/PrivacyPage'
+import TermsPage from './pages/legal/TermsPage'
+import LegalNoticePage from './pages/legal/LegalNoticePage'
+import ContactPage from './pages/legal/ContactPage'
+
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode }) {
     super(props)
@@ -74,8 +80,11 @@ export default function App() {
         <AuthProvider>
           <ToastProvider>
             <Routes>
-              {/* ─── ROOT ─── */}
               <Route path="/" element={<LandingPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/legal" element={<LegalNoticePage />} />
+              <Route path="/contact" element={<ContactPage />} />
 
               {/* ─── SCAN (PUBLIC ENTRY EVENT) ─── */}
               <Route path="/scan" element={<Scan />} />
