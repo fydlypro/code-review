@@ -113,22 +113,25 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 lg:py-32 w-full">
           {/* Pill animée */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-bv text-white text-[11px] font-bold tracking-widest shadow">
-              <span>✨</span>
-              <span>NOUVEAU · Programme de fidélité 2.0</span>
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-gradient-bv text-white text-[11px] font-bold tracking-widest shadow">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse flex-shrink-0" />
+              <span>NOUVEAU — FIDÉLITÉ 100% DIGITALE</span>
+              <Sparkles size={12} className="text-white/80" />
             </div>
           </div>
 
           {/* H1 */}
           <h1 className="text-[44px] sm:text-[60px] lg:text-[72px] font-display font-bold text-slate-900 text-center leading-[1.05] tracking-tight mb-6">
-            La fidélisation qui
+            La fidélité
             <br />
-            <span className="text-gradient-bv italic">fidélise vraiment.</span>
+            <span className="text-gradient-bv italic">sans friction.</span>
+            <br />
+            <span className="text-slate-900">Sans carte.</span>
           </h1>
 
           {/* Sous-titre */}
           <p className="text-center text-lg sm:text-xl text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed">
-            Tampons digitaux, analytics temps réel, push notifications. Pour les commerces locaux qui veulent des clients qui reviennent.
+            Fydly connecte vos clients à votre commerce en 2 secondes chrono — un scan, un tampon digital, et ils reviennent. Toujours.
           </p>
 
           {/* CTA group */}
@@ -144,14 +147,23 @@ export default function LandingPage() {
               className="w-[240px] h-14 text-base font-semibold text-slate-700 hover:bg-white/80 rounded-btn transition-all border border-slate-200 bg-white/60 active:scale-95 flex items-center justify-center gap-2"
             >
               <QrCode size={18} />
-              Voir la démo
+              Scanner un QR Code
             </button>
           </div>
 
           {/* Social proof */}
-          <p className="text-center text-sm text-slate-400 font-medium">
-            Déjà 300+ commerçants · ★★★★★ 4.9/5 · Sans carte bancaire
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex -space-x-2">
+              {['#BFDBFE','#93C5FD','#60A5FA','#3B82F6'].map((c, i) => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: c, zIndex: 4 - i }}>
+                  {['M','A','S','L'][i]}
+                </div>
+              ))}
+            </div>
+            <div className="text-sm text-slate-500">
+              <span className="font-bold text-slate-900">7 commerçants</span> nous font confiance
+            </div>
+          </div>
         </div>
       </section>
 
@@ -160,10 +172,10 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 divide-x-0 sm:divide-x divide-slate-700">
             {[
-              { value: '300+', label: 'Commerçants' },
-              { value: '50 000+', label: 'Clients fidélisés' },
-              { value: '+47%', label: 'Visites en plus' },
-              { value: '4.9/5', label: 'Note moyenne' },
+              { value: '7', label: 'Commerçants actifs' },
+              { value: '300+', label: 'Clients fidélisés' },
+              { value: '96%', label: 'Taux de satisfaction' },
+              { value: '+47%', label: 'Visites en plus (moy.)' },
             ].map((stat, i) => (
               <div key={i} className="flex flex-col items-center text-center px-4">
                 <span className="text-[40px] font-mono font-bold text-gradient-bv leading-none mb-2">{stat.value}</span>
@@ -180,39 +192,39 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1.5 rounded-full bg-fydly-50 text-fydly-600 border border-fydly-100 text-xs font-bold uppercase tracking-widest mb-5">Comment ça marche</span>
             <h2 className="text-4xl lg:text-[52px] font-display text-slate-900 leading-tight mb-4">
-              Comment ça marche ?
+              Simple comme<br />un coup de tampon.
             </h2>
-            <p className="text-xl text-slate-500">3 étapes, c'est tout.</p>
+            <p className="text-xl text-slate-500">Pas d'application à télécharger, pas de carte à imprimer. En trois étapes, vos clients sont fidélisés.</p>
           </div>
 
           <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               {
                 num: '01',
-                emoji: '🏪',
+                emoji: '📲',
                 iconBg: 'bg-fydly-50',
                 iconColor: 'text-fydly-500',
-                icon: <Store size={28} className="text-fydly-500" />,
-                title: 'Inscrivez votre commerce',
-                desc: 'Créez votre compte en moins de 5 minutes. Configurez votre programme de fidélité personnalisé.',
+                icon: <QrCode size={28} className="text-fydly-500" />,
+                title: 'Scan du QR Code',
+                desc: "Votre client scanne le QR Code affiché en caisse. Aucune installation requise — tout se passe dans le navigateur.",
               },
               {
                 num: '02',
-                emoji: '📲',
+                emoji: '⚡',
                 iconBg: 'bg-violet-50',
                 iconColor: 'text-violet-500',
-                icon: <QrCode size={28} className="text-violet-500" />,
-                title: 'Affichez votre QR Code',
-                desc: 'Imprimez ou affichez votre QR Code unique en caisse. Vos clients scannent en 2 secondes.',
+                icon: <Zap size={28} className="text-violet-500" />,
+                title: 'Tampon instantané',
+                desc: "En 2 secondes, un tampon est crédité sur leur carte digitale. Une animation satisfaisante récompense l'action.",
               },
               {
                 num: '03',
-                emoji: '⚡',
+                emoji: '⭐',
                 iconBg: 'bg-green-50',
                 iconColor: 'text-green-500',
-                icon: <Zap size={28} className="text-green-500" />,
-                title: 'Fidélisez automatiquement',
-                desc: 'Les tampons s\'accumulent, les récompenses se débloquent. Vos clients reviennent naturellement.',
+                icon: <Star size={28} className="text-green-500" />,
+                title: 'Récompense débloquée',
+                desc: "Une fois la carte complète, le client présente sa récompense. Vous validez, il repart heureux. Et il reviendra.",
               },
             ].map((step, i) => (
               <div key={i} className="relative flex flex-col bg-white border border-slate-100 rounded-card shadow-card p-8 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 group">
@@ -239,10 +251,10 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1.5 rounded-full bg-fydly-50 text-fydly-600 border border-fydly-100 text-xs font-bold uppercase tracking-widest mb-5">Fonctionnalités</span>
             <h2 className="text-4xl lg:text-[52px] font-display text-slate-900 leading-tight mb-4">
-              Tout ce dont vous avez besoin.
+              Tout ce qu'il faut.<br />Rien de superflu.
             </h2>
             <p className="text-xl text-slate-500 max-w-xl mx-auto">
-              Une plateforme complète pour fidéliser intelligemment vos clients.
+              Fydly réunit dans une seule plateforme légère tout ce dont votre commerce a besoin pour fidéliser intelligemment.
             </p>
           </div>
 
@@ -252,43 +264,43 @@ export default function LandingPage() {
                 emoji: '🎯',
                 iconBg: 'bg-fydly-50',
                 icon: <QrCode className="text-fydly-500" size={24} />,
-                title: 'QR Code dynamique',
-                desc: 'Quotidien, sécurisé. Changeable à tout moment depuis votre dashboard. Impossible à falsifier.',
-              },
-              {
-                emoji: '📊',
-                iconBg: 'bg-blue-50',
-                icon: <BarChart3 className="text-blue-500" size={24} />,
-                title: 'Analytics avancées',
-                desc: 'Heatmap de fréquentation, taux de rétention, clients actifs vs inactifs. Tout en temps réel.',
-              },
-              {
-                emoji: '🔔',
-                iconBg: 'bg-amber-50',
-                icon: <Bell className="text-amber-500" size={24} />,
-                title: 'Push notifications',
-                desc: 'Ciblez vos clients avec des messages personnalisés. Relancez les inactifs automatiquement.',
+                title: 'QR Code unique par commerce',
+                desc: 'Généré automatiquement, prêt à imprimer ou afficher sur écran. Changeable à tout moment.',
               },
               {
                 emoji: '🃏',
                 iconBg: 'bg-violet-50',
                 icon: <CreditCard className="text-violet-500" size={24} />,
-                title: 'Cartes digitales',
-                desc: 'Avec animations gamifiées. Vos clients adorent voir leurs tampons s\'accumuler.',
+                title: 'Carte 100% digitale',
+                desc: 'Stockée dans le mobile, accessible depuis le navigateur sans app. Vos clients ne la perdront plus.',
               },
               {
-                emoji: '🤖',
+                emoji: '🔔',
+                iconBg: 'bg-amber-50',
+                icon: <Bell className="text-amber-500" size={24} />,
+                title: 'Notifications de relance',
+                desc: 'Alertes automatiques pour rappeler à vos clients qu\'ils ont des tampons en attente.',
+              },
+              {
+                emoji: '📊',
                 iconBg: 'bg-emerald-50',
                 icon: <TrendingUp className="text-emerald-500" size={24} />,
-                title: 'IA & recommandations',
-                desc: 'Insights intelligents sur vos meilleures heures, vos clients VIP et les opportunités à saisir.',
+                title: 'Analytics en temps réel',
+                desc: 'Suivez vos performances : nombre de visites, taux de rétention, récompenses distribuées.',
+              },
+              {
+                emoji: '🛡️',
+                iconBg: 'bg-fydly-50',
+                icon: <ShieldCheck className="text-fydly-500" size={24} />,
+                title: 'Anti-fraude intégré',
+                desc: 'Tokens dynamiques à durée de vie limitée. Impossible de falsifier un tampon.',
               },
               {
                 emoji: '⚡',
-                iconBg: 'bg-fydly-50',
-                icon: <Zap className="text-fydly-500" size={24} />,
-                title: 'Temps réel',
-                desc: 'Tampons instantanés dès le scan. Zéro délai, zéro friction. L\'expérience parfaite.',
+                iconBg: 'bg-violet-50',
+                icon: <Zap className="text-violet-500" size={24} />,
+                title: 'Expérience micro-animée',
+                desc: 'Des feedbacks visuels satisfaisants à chaque tampon — vos clients veulent en reprendre un.',
               },
             ].map((f, i) => (
               <div key={i} className="p-7 bg-white rounded-card border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 group cursor-default">
@@ -303,6 +315,29 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── TÉMOIGNAGE ─── */}
+      <section className="py-20 lg:py-24 px-6 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex justify-center gap-1 mb-8">
+            {[1,2,3,4,5].map(i => (
+              <Star key={i} size={20} className="text-amber-400" fill="currentColor" />
+            ))}
+          </div>
+          <blockquote className="text-2xl lg:text-4xl font-display text-slate-900 leading-snug mb-10 italic">
+            "Depuis Fydly, mes clients reviennent 40% plus souvent. Et ils adorent l'animation quand ils gagnent un tampon — ça fait vraiment la différence."
+          </blockquote>
+          <div className="flex items-center justify-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-bv flex items-center justify-center text-white font-bold text-lg shadow-glow-blue">
+              M
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-slate-900 text-sm">Marie Fontaine</p>
+              <p className="text-slate-400 text-xs font-medium">Propriétaire — Boulangerie Fontaine, Lyon</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── PRICING ─── */}
       <section id="pricing" className="py-20 lg:py-28 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
@@ -312,45 +347,13 @@ export default function LandingPage() {
               Simple. Transparent.
             </h2>
             <p className="text-xl text-slate-500 max-w-lg mx-auto">
-              Commencez gratuitement, évoluez quand vous êtes prêt.
+              Démarrez gratuitement, évoluez quand vous êtes prêt. Aucune carte bancaire requise pour commencer.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* FREE */}
-            <div className="bg-white border border-slate-200 rounded-[20px] p-8 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all">
-              <div className="mb-6">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Gratuit</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-display font-bold text-slate-900">0 €</span>
-                  <span className="text-slate-400 text-sm font-medium">/ mois</span>
-                </div>
-                <p className="text-slate-400 text-sm mt-2">Pour démarrer sans risque</p>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Fonctions basiques',
-                  '50 clients maximum',
-                  'QR Code unique',
-                  'Carte digitale standard',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
-                    <CheckCircle size={15} className="text-slate-300 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={() => navigate('/merchant/register')}
-                className="w-full py-3 rounded-btn border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors active:scale-95"
-              >
-                Commencer gratuitement
-              </button>
-            </div>
-
-            {/* PRO */}
+            {/* Pro */}
             <div className="relative bg-gradient-bv rounded-[20px] p-8 shadow-glow-strong overflow-hidden">
-              {/* Badge Populaire */}
               <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 rounded-full text-white text-[10px] font-bold uppercase tracking-wider border border-white/20">
                 Populaire
               </div>
@@ -359,18 +362,18 @@ export default function LandingPage() {
               <div className="mb-6 relative z-10">
                 <p className="text-xs font-bold uppercase tracking-widest text-white/70 mb-2">Pro</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-display font-bold text-white">29 €</span>
+                  <span className="text-4xl font-display font-bold text-white">59,99 €</span>
                   <span className="text-white/60 text-sm font-medium">/ mois</span>
                 </div>
-                <p className="text-white/60 text-sm mt-2">30 jours d'essai gratuit</p>
+                <p className="text-white/60 text-sm mt-2">30 jours gratuits — sans carte bancaire</p>
               </div>
               <ul className="space-y-3 mb-8 relative z-10">
                 {[
-                  'Tout illimité',
-                  'Analytics complets',
-                  'Push notifications',
-                  'IA & recommandations',
-                  'Support prioritaire',
+                  '1 établissement · clients illimités',
+                  'Notifications push illimitées',
+                  'Analytics complets + IA',
+                  'Segmentation clients (VIP / inactifs)',
+                  'Support email sous 48h',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-white/90">
                     <CheckCircle size={15} className="text-white flex-shrink-0" />
@@ -386,11 +389,41 @@ export default function LandingPage() {
                 Essayer gratuitement — 30 jours
               </Button>
             </div>
+
+            {/* Business */}
+            <div className="bg-white border border-slate-200 rounded-[20px] p-8 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all">
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Business</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-display font-bold text-slate-900">109,99 €</span>
+                  <span className="text-slate-400 text-sm font-medium">/ mois</span>
+                </div>
+                <p className="text-slate-400 text-sm mt-2">30 jours gratuits — sans carte bancaire</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Jusqu'à 5 établissements",
+                  'Dashboard centralisé multi-sites',
+                  'API accès + personnalisation',
+                  'Appel de lancement en visio (1h)',
+                  'WhatsApp direct avec le fondateur',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <CheckCircle size={15} className="text-fydly-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => navigate('/merchant/register')}
+                className="w-full py-3 rounded-btn border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors active:scale-95"
+              >
+                Essayer gratuitement — 30 jours
+              </button>
+            </div>
           </div>
 
-          <p className="text-center text-sm text-slate-400 font-medium mt-8">
-            30 jours d'essai gratuit · Sans carte bancaire
-          </p>
+
         </div>
       </section>
 
@@ -411,7 +444,7 @@ export default function LandingPage() {
             <span className="text-gradient-bv italic">vos visites ?</span>
           </h2>
           <p className="text-xl text-slate-500 mb-12 max-w-xl mx-auto leading-relaxed">
-            Rejoignez les commerçants qui ont digitalisé leur fidélité. Démarrez en moins de 10 minutes.
+            Rejoignez les premiers commerçants qui ont digitalisé leur fidélité. Démarrez en moins de 10 minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
