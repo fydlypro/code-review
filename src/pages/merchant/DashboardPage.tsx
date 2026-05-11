@@ -194,24 +194,51 @@ export default function MerchantDashboard() {
 
   const startScanner = async () => {
     setShowScanner(true)
-    setTimeout(async () => {
-      try {
-        const { Html5Qrcode } = await import('html5-qrcode')
-        const scanner = new Html5Qrcode('reader')
-        scannerRef.current = scanner
-        setScanning(true)
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          onScanSuccess,
-          () => {}
-        )
-        scanningRef.current = true
-      } catch (err) {
-        toast.error('Erreur caméra')
-        stopScanner()
+
+    // Wait for the #reader element to exist in the DOM (modal animation)
+    const waitForElement = (): Promise<void> => {
+      return new Promise((resolve) => {
+        let attempts = 0
+        const check = () => {
+          if (document.getElementById('reader')) {
+            resolve()
+          } else if (attempts >= 30) {
+            // 30 × 100ms = 3s max
+            resolve()
+          } else {
+            attempts++
+            setTimeout(check, 100)
+          }
+        }
+        check()
+      })
+    }
+
+    await waitForElement()
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const readerEl = document.getElementById('reader')
+      if (!readerEl) {
+        toast.error('Impossible d\'ouvrir le scanner')
+        setShowScanner(false)
+        return
       }
-    }, 100)
+      const scanner = new Html5Qrcode('reader')
+      scannerRef.current = scanner
+      setScanning(true)
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        () => {}
+      )
+      scanningRef.current = true
+    } catch (err) {
+      console.error('[Scanner]', err)
+      toast.error('Erreur caméra — vérifiez les permissions')
+      stopScanner()
+    }
   }
 
   const stopScanner = () => {
