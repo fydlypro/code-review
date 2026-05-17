@@ -108,14 +108,14 @@ export default function SupportPage() {
         <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Une question ? On est là 😊</p>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>Réponse en moins de 2h.</p>
         <a
-          href="mailto:support@fydly.app"
+          href="mailto:fydlypro@gmail.com"
           style={{
             display: 'block', marginTop: 12, padding: '11px 0', borderRadius: 12,
             background: '#fff', color: '#2563EB', fontSize: 13, fontWeight: 700,
             textAlign: 'center', textDecoration: 'none'
           }}
         >
-          support@fydly.app
+          fydlypro@gmail.com
         </a>
       </div>
     </div>

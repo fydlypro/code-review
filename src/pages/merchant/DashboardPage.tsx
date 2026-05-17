@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, Gift, AlertTriangle, Scan, RefreshCw, ChevronRight,
-  Copy, Printer, Share2, Megaphone, Send, Zap, Rocket
+  Printer, Maximize2, Megaphone, Send, Zap, Rocket
 } from 'lucide-react'
 import { supabase, QrToken, Reward } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -36,6 +36,7 @@ export default function MerchantDashboard() {
 
   const [loading, setLoading] = useState(true)
   const [activeToken, setActiveToken] = useState<QrToken | null>(null)
+  const [qrFullscreen, setQrFullscreen] = useState(false)
   const [timeLeft, setTimeLeft] = useState('')
   const [timePercent, setTimePercent] = useState(100)
   const [period, setPeriod] = useState<Period>('30j')
@@ -421,7 +422,7 @@ export default function MerchantDashboard() {
             Bonjour, {merchant?.name || 'Vous'} 👋
           </h1>
           <p className="text-slate-400 text-[13px] font-medium mt-0.5 capitalize">
-            {todayLabel} · ☀️ Lyon
+            {todayLabel}
           </p>
         </div>
         {/* Desktop right pills */}
@@ -524,13 +525,6 @@ export default function MerchantDashboard() {
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <button
-                    onClick={copyQrLink}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 rounded-[8px] hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95"
-                  >
-                    <Copy size={12} />
-                    Copier
-                  </button>
-                  <button
                     onClick={() => window.print()}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 rounded-[8px] hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95"
                   >
@@ -538,17 +532,11 @@ export default function MerchantDashboard() {
                     Imprimer
                   </button>
                   <button
-                    onClick={() => {
-                      if (navigator.share && activeToken) {
-                        navigator.share({ url: generateClientUrl(), title: 'Mon QR Fydly' })
-                      } else {
-                        copyQrLink()
-                      }
-                    }}
+                    onClick={() => setQrFullscreen(true)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-200 rounded-[8px] hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95"
                   >
-                    <Share2 size={12} />
-                    Partager
+                    <Maximize2 size={12} />
+                    Grand écran
                   </button>
                 </div>
               </div>
@@ -960,6 +948,36 @@ export default function MerchantDashboard() {
           </div>
         </div>
       </Modal>
+
+      {/* QR fullscreen overlay */}
+      {qrFullscreen && activeToken && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+          onClick={() => setQrFullscreen(false)}
+        >
+          <div
+            className="bg-white rounded-[24px] p-8 flex flex-col items-center gap-4 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <p className="text-[13px] font-semibold text-slate-500 uppercase tracking-wide">QR Code du jour</p>
+            <QRCodeSVG
+              value={generateClientUrl()}
+              size={260}
+              level="H"
+              includeMargin={false}
+              imageSettings={{
+                src: '/logo-icon.svg',
+                x: undefined,
+                y: undefined,
+                height: 48,
+                width: 48,
+                excavate: true,
+              }}
+            />
+            <p className="text-[12px] text-slate-400">Appuyez en dehors pour fermer</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -17,16 +17,6 @@ type ActiveTab = 'overview' | 'frequentation' | 'horaires' | 'score' | 'recommen
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const SLOT_LABELS = ['8h', '10h', '12h', '14h', '16h', '18h']
 
-// Mock heatmap data — valeurs fortes Ven-Dim matin (10h-12h)
-const MOCK_HEATMAP: number[][] = [
-  // Lun  Mar  Mer  Jeu  Ven  Sam  Dim
-  [1,    1,    1,    2,    3,    4,    3  ], // 8h
-  [2,    2,    2,    3,    4,    5,    4  ], // 10h
-  [2,    2,    3,    3,    3,    4,    3  ], // 12h
-  [1,    2,    2,    2,    3,    3,    3  ], // 14h
-  [1,    1,    2,    2,    3,    4,    3  ], // 16h
-  [0,    1,    1,    1,    2,    3,    2  ], // 18h
-]
 
 function heatBgClass(v: number): string {
   if (v === 0) return 'bg-slate-100'
@@ -239,13 +229,11 @@ export default function AnalyticsPage() {
     year: 'numeric',
   })
 
-  // ── Heatmap (real data when available, else mock) ───────────────────────────
+  // ── Heatmap (real data when available, else empty grid) ────────────────────
   const heatmap = useMemo(() => {
     if (!data || data.transactions.length === 0) {
-      // mock
-      const peak = { day: 'Sam', slot: '10h' }
-      const quiet = { day: 'Lun', slot: '8h' }
-      return { grid: MOCK_HEATMAP, peak, quiet }
+      const emptyGrid: number[][] = Array.from({ length: 6 }, () => Array(7).fill(0))
+      return { grid: emptyGrid, peak: null, quiet: null }
     }
 
     const grid: number[][] = Array.from({ length: 6 }, () => Array(7).fill(0))
@@ -281,17 +269,109 @@ export default function AnalyticsPage() {
 
   // ── Chart data ──────────────────────────────────────────────────────────────
   const totalVisits = useMemo(() => {
-    if (!data) return 892
+    if (!data) return 0
     const days = timeFilter === '7d' ? 7 : timeFilter === '30d' ? 30 : 90
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-    return data.transactions.filter(t => t.type === 'earn' && t.created_at >= cutoff).length || 892
+    return data.transactions.filter(t => t.type === 'earn' && t.created_at >= cutoff).length
   }, [data, timeFilter])
+
+  // ── Deltas mois sur mois ─────────────────────────────────────────────────────
+  const deltas = useMemo(() => {
+    if (!data) return { newClients: '—', returnRate: '—', visits: '—', rewards: '—' }
+
+    const pctDelta = (curr: number, prev: number) => {
+      if (prev === 0) return curr > 0 ? '+100%' : '0%'
+      const d = Math.round(((curr - prev) / prev) * 100)
+      return `${d >= 0 ? '+' : ''}${d}%`
+    }
+
+    return {
+      newClients: pctDelta(data.newClientsThisMonth, data.newClientsPrevMonth),
+      returnRate: `${data.returnRate}%`,
+      visits: pctDelta(data.totalVisitsThisMonth, data.totalVisitsPrevMonth),
+      rewards: `${data.rewardsRedeemedThisMonth > 0 ? '+' : ''}${data.rewardsRedeemedThisMonth}`,
+    }
+  }, [data])
+
+  // ── Chart config (path + labels) reactive to timeFilter ─────────────────────
+  const chartConfig = useMemo(() => {
+    const now = new Date()
+    const getCount = (from: Date, to: Date) => {
+      if (!data) return 0
+      return data.transactions.filter(t => {
+        const d = new Date(t.created_at)
+        return t.type === 'earn' && d >= from && d <= to
+      }).length
+    }
+
+    const computeInsight = (values: number[], periodLabel: string) => {
+      const first = values.slice(0, Math.floor(values.length / 2)).reduce((a, b) => a + b, 0)
+      const second = values.slice(Math.floor(values.length / 2)).reduce((a, b) => a + b, 0)
+      if (first === 0 && second === 0) return `Aucune activité sur les ${periodLabel}`
+      if (second > first) {
+        const pct = first > 0 ? Math.round(((second - first) / first) * 100) : 100
+        return `Vos visites sont en hausse ! · +${pct}% sur ${periodLabel}`
+      }
+      if (second < first) {
+        const pct = Math.round(((first - second) / first) * 100)
+        return `Activité en baisse · -${pct}% sur ${periodLabel}`
+      }
+      return `Activité stable sur ${periodLabel}`
+    }
+
+    if (timeFilter === '7d') {
+      const buckets = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(now); d.setDate(d.getDate() - (6 - i)); return d
+      })
+      const values = buckets.map(d => {
+        const from = new Date(d); from.setHours(0, 0, 0, 0)
+        const to = new Date(d); to.setHours(23, 59, 59, 999)
+        return getCount(from, to)
+      })
+      const labels = buckets.map(d => d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }))
+      return { values, labels, periodLabel: '7 derniers jours', insight: computeInsight(values, '7 jours') }
+    }
+
+    if (timeFilter === '30d') {
+      const buckets = Array.from({ length: 6 }, (_, i) => {
+        const to = new Date(now); to.setDate(to.getDate() - i * 5); to.setHours(23, 59, 59, 999)
+        const from = new Date(to); from.setDate(from.getDate() - 4); from.setHours(0, 0, 0, 0)
+        return { from, to, date: new Date(from) }
+      }).reverse()
+      const values = buckets.map(({ from, to }) => getCount(from, to))
+      const labels = buckets.map(({ date }) => date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }))
+      return { values, labels, periodLabel: '30 derniers jours', insight: computeInsight(values, '30 jours') }
+    }
+
+    // 3m — 6 bi-weekly buckets
+    const buckets = Array.from({ length: 6 }, (_, i) => {
+      const to = new Date(now); to.setDate(to.getDate() - i * 14); to.setHours(23, 59, 59, 999)
+      const from = new Date(to); from.setDate(from.getDate() - 13); from.setHours(0, 0, 0, 0)
+      return { from, to, date: new Date(from) }
+    }).reverse()
+    const values = buckets.map(({ from, to }) => getCount(from, to))
+    const labels = buckets.map(({ date }) => date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }))
+    return { values, labels, periodLabel: '3 derniers mois', insight: computeInsight(values, '3 mois') }
+  }, [data, timeFilter])
+
+  const { svgLine, svgArea } = useMemo(() => {
+    const { values } = chartConfig
+    const n = values.length
+    const maxV = Math.max(...values, 1)
+    const W = 600, H = 200, padY = 25
+    const pts = values.map((v, i) => ({
+      x: (i / (n - 1)) * W,
+      y: H - padY - ((v / maxV) * (H - 2 * padY))
+    }))
+    const linePts = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+    return { svgLine: linePts, svgArea: `${linePts} L${W},${H} L0,${H} Z` }
+  }, [chartConfig])
 
   // ── Score Fydly ─────────────────────────────────────────────────────────────
   const scoreData = useMemo(() => {
-    if (!data) return { total: 78, returnPts: 40, growthPts: 20, notifPts: 10, rewardPts: 8 }
+    if (!data) return { total: 0, returnPts: 0, growthPts: 0, notifPts: 0, rewardPts: 0 }
 
-    const returnRate = data.returnRate ?? 73
+    const returnRate = data.returnRate ?? 0
     const returnPts = Math.round((returnRate / 100) * 40)
     const growthPts = data.newClientsPrevMonth === 0
       ? (data.newClientsThisMonth > 0 ? 20 : 0)
@@ -300,7 +380,10 @@ export default function AnalyticsPage() {
       ? Math.floor((Date.now() - new Date(data.lastNotificationDate).getTime()) / 86400000)
       : 999
     const notifPts = lastNotifDays <= 7 ? 20 : lastNotifDays <= 14 ? 15 : lastNotifDays <= 30 ? 10 : 0
-    const rewardPts = Math.min(20, Math.round((data.rewardsRedeemedThisMonth ?? 0) * 2))
+    // 1 récompense = 5 pts, plafonné à 20 (4+ récompenses = score max)
+    const totalRewards = (data.rewardsRedeemedThisMonth ?? 0) +
+      Math.floor((data.transactions?.filter(t => t.type === 'redeem').length ?? 0) / 2)
+    const rewardPts = Math.min(20, totalRewards * 5)
 
     return {
       total: Math.min(100, returnPts + growthPts + notifPts + rewardPts),
@@ -313,33 +396,18 @@ export default function AnalyticsPage() {
 
   // ── Recommendations ─────────────────────────────────────────────────────────
   const recommendations = useMemo(() => {
-    if (!data || data.totalClients < 3) {
-      return [
-        {
-          icon: '💡',
-          bg: 'bg-amber-50',
-          border: 'border-amber-100',
-          text: 'Envoyez une relance à vos 63 clients inactifs',
-          action: () => setNotifModal({ message: 'Vous nous manquez ! Revenez nous voir 😊', segment: 'inactive' }),
-        },
-        {
-          icon: '🎯',
-          bg: 'bg-blue-50',
-          border: 'border-blue-100',
-          text: 'Programmez une promo samedi matin (créneau fort)',
-          action: () => setNotifModal({ message: 'Venez ce samedi matin pour une surprise ! 🎁', segment: 'all' }),
-        },
-        {
-          icon: '⭐',
-          bg: 'bg-violet-50',
-          border: 'border-violet-100',
-          text: 'Score à améliorer : activez les notifications push',
-          action: () => setNotifModal({ message: 'Bonjour ! On vous attend avec plaisir 😊', segment: 'all' }),
-        },
-      ]
-    }
-
     const recs: Array<{ icon: string; bg: string; border: string; text: string; action?: () => void }> = []
+
+    if (!data) {
+      recs.push({
+        icon: '🚀',
+        bg: 'bg-blue-50',
+        border: 'border-blue-100',
+        text: 'Commencez par scanner votre premier client pour démarrer votre programme de fidélité',
+        action: undefined,
+      })
+      return recs
+    }
 
     const twentyDaysAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
     const thirtyFiveDaysAgo = new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString()
@@ -365,8 +433,8 @@ export default function AnalyticsPage() {
         icon: '🎯',
         bg: 'bg-blue-50',
         border: 'border-blue-100',
-        text: `Programmez une promo ${heatmap.peak?.day ?? 'samedi'} matin (créneau fort)`,
-        action: () => setNotifModal({ message: `Venez ce ${(heatmap.peak?.day ?? 'samedi').toLowerCase()} pour une surprise ! 🎁`, segment: 'all' }),
+        text: `Programmez une promo ${heatmap.peak?.day ?? 'vendredi'} matin (créneau fort)`,
+        action: () => setNotifModal({ message: `Venez ce ${(heatmap.peak?.day ?? 'vendredi').toLowerCase()} pour une surprise ! 🎁`, segment: 'all' }),
       })
     }
 
@@ -420,8 +488,8 @@ export default function AnalyticsPage() {
 
       {/* ── HEADER ──────────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
-          {/* Left: icon + title */}
+        <div className="flex flex-col gap-3">
+          {/* Row 1: icon + title */}
           <div className="flex items-center gap-4">
             <div
               className="w-14 h-14 rounded-[16px] flex items-center justify-center text-white shrink-0 bg-gradient-bv shadow-glow-strong"
@@ -430,20 +498,20 @@ export default function AnalyticsPage() {
               <TrendingUp size={26} />
             </div>
             <div>
-              <h1 className="text-[32px] sm:text-[24px] font-display font-bold text-slate-900 leading-tight" style={{ fontSize: 'clamp(24px, 5vw, 32px)' }}>
+              <h1 className="font-display font-bold text-slate-900 leading-tight" style={{ fontSize: 'clamp(22px, 5vw, 28px)' }}>
                 Statistiques
               </h1>
               <p className="text-[13px] text-slate-500 mt-0.5">{today}</p>
             </div>
           </div>
 
-          {/* Right: refresh + period filter */}
-          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          {/* Row 2: actions (toujours visible sur mobile) */}
+          <div className="flex items-center gap-2">
             <button
               onClick={reload}
-              className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-[13px] font-semibold px-3 py-2 rounded-[10px] border border-slate-200 bg-white hover:bg-slate-50 transition-all"
+              className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-[12px] font-semibold px-3 py-2 rounded-[10px] border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0"
             >
-              <RefreshCw size={14} /> Actualiser
+              <RefreshCw size={13} /> Actualiser
             </button>
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-[10px]">
               {(['7d', '30d', '3m'] as TimeFilter[]).map(f => (
@@ -495,8 +563,8 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               label="Nouveaux clients"
-              value={String(data?.newClientsThisMonth ?? 42)}
-              delta="+18%"
+              value={String(data?.newClientsThisMonth ?? 0)}
+              delta={deltas.newClients}
               accent="#2563EB"
               icon={UserPlus}
               sparkColor="#2563EB"
@@ -504,8 +572,8 @@ export default function AnalyticsPage() {
             />
             <KpiCard
               label="Taux de fidélité"
-              value={`${data?.returnRate ?? 73}%`}
-              delta="+4%"
+              value={`${data?.returnRate ?? 0}%`}
+              delta={deltas.returnRate}
               accent="#059669"
               icon={Heart}
               sparkColor="#059669"
@@ -513,8 +581,8 @@ export default function AnalyticsPage() {
             />
             <KpiCard
               label="Passages ce mois"
-              value={String(totalVisits ?? 892)}
-              delta="+12%"
+              value={String(data?.totalVisitsThisMonth ?? 0)}
+              delta={deltas.visits}
               accent="#7C3AED"
               icon={Activity}
               sparkColor="#7C3AED"
@@ -522,8 +590,8 @@ export default function AnalyticsPage() {
             />
             <KpiCard
               label="Récompenses offertes"
-              value={String(data?.rewardsRedeemedThisMonth ?? 34)}
-              delta="+5"
+              value={String(data?.rewardsRedeemedThisMonth ?? 0)}
+              delta={deltas.rewards}
               accent="#D97706"
               icon={Gift}
               sparkColor="#D97706"
@@ -536,14 +604,14 @@ export default function AnalyticsPage() {
       {/* ── AREA CHART ──────────────────────────────────────────────────────── */}
       <section className="bg-white rounded-2xl shadow-card p-5 sm:p-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
+        <div className="flex items-start justify-between gap-3 mb-5">
           <div>
             <h2 className="text-[17px] font-display font-bold text-slate-900 leading-tight">
               Comment évolue votre fréquentation ?
             </h2>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[12px] font-bold text-blue-700">
-                {totalVisits} visites · {timeFilter === '7d' ? '7 derniers jours' : timeFilter === '30d' ? '30 derniers jours' : '3 derniers mois'}
+                {totalVisits} visites · {chartConfig.periodLabel}
               </span>
             </div>
           </div>
@@ -554,61 +622,32 @@ export default function AnalyticsPage() {
 
         {/* SVG Area Chart */}
         <div className="relative w-full" style={{ height: 200 }}>
-          <svg
-            viewBox="0 0 600 200"
-            preserveAspectRatio="none"
-            width="100%"
-            height="200"
-          >
+          <svg viewBox="0 0 600 200" preserveAspectRatio="none" width="100%" height="200">
             <defs>
               <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#2563EB" stopOpacity="0.18" />
                 <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
               </linearGradient>
             </defs>
-
-            {/* Horizontal grid lines */}
             {[40, 80, 120, 160].map(y => (
-              <line
-                key={y}
-                x1="0" y1={y} x2="600" y2={y}
-                stroke="#F1F5F9"
-                strokeWidth="1"
-                strokeDasharray="4 4"
-              />
+              <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="4 4" />
             ))}
-
-            {/* Area fill */}
-            <path
-              d="M0,160 L60,140 L120,120 L180,130 L240,90 L300,100 L360,70 L420,80 L480,50 L540,60 L600,40 L600,200 L0,200 Z"
-              fill="url(#areaGrad)"
-            />
-
-            {/* Line */}
-            <path
-              d="M0,160 L60,140 L120,120 L180,130 L240,90 L300,100 L360,70 L420,80 L480,50 L540,60 L600,40"
-              fill="none"
-              stroke="#2563EB"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d={svgArea} fill="url(#areaGrad)" />
+            <path d={svgLine} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
 
           {/* Date labels */}
           <div className="flex justify-between px-1 mt-1">
-            {['10 jan', '17 jan', '24 jan', '1 fév', '8 fév', '15 fév', '22 fév'].map(d => (
+            {chartConfig.labels.map(d => (
               <span key={d} className="text-[10px] font-semibold text-slate-400">{d}</span>
             ))}
           </div>
         </div>
 
-        {/* Insight bandeau vert */}
+        {/* Insight bandeau */}
         <div className="mt-4 flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-[12px] px-4 py-3">
           <span className="text-base shrink-0">📈</span>
-          <p className="text-[13px] font-semibold text-emerald-800">
-            Vos visites sont en hausse ! · +12% sur 30 jours
-          </p>
+          <p className="text-[13px] font-semibold text-emerald-800">{chartConfig.insight}</p>
         </div>
       </section>
 
@@ -674,9 +713,7 @@ export default function AnalyticsPage() {
                 <div>
                   <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide">Heure de pointe</p>
                   <p className="text-[13px] font-bold text-amber-900">
-                    {heatmap.peak?.day ?? 'Samedi'} {heatmap.peak?.slot ?? '10h'}-{
-                      heatmap.peak?.slot ? SLOT_LABELS[SLOT_LABELS.indexOf(heatmap.peak.slot) + 1] ?? '12h' : '12h'
-                    }
+                    {heatmap.peak?.day ?? '—'} {heatmap.peak?.slot ?? '—'}{heatmap.peak?.slot ? `-${SLOT_LABELS[SLOT_LABELS.indexOf(heatmap.peak.slot) + 1] ?? ''}` : ''}
                   </p>
                 </div>
               </div>
@@ -685,7 +722,7 @@ export default function AnalyticsPage() {
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Créneau calme</p>
                   <p className="text-[13px] font-bold text-slate-900">
-                    {heatmap.quiet?.day ?? 'Lundi'} {heatmap.quiet?.slot ?? '8h'}
+                    {heatmap.quiet?.day ?? '—'} {heatmap.quiet?.slot ?? '—'}
                   </p>
                 </div>
               </div>
@@ -718,9 +755,9 @@ export default function AnalyticsPage() {
             {/* Sub-metrics */}
             <div className="flex-1 w-full space-y-4">
               {[
-                { label: 'Fidélité', pct: data?.returnRate ?? 73 },
-                { label: 'Engagement', pct: Math.round((scoreData.notifPts / 20) * 100) || 68 },
-                { label: 'Satisfaction', pct: Math.round(((scoreData.growthPts + scoreData.rewardPts) / 40) * 100) || 90 },
+                { label: 'Fidélité', pct: data?.returnRate ?? 0 },
+                { label: 'Engagement', pct: Math.round((scoreData.notifPts / 20) * 100) },
+                { label: 'Satisfaction', pct: Math.round(((scoreData.growthPts + scoreData.rewardPts) / 40) * 100) },
               ].map(m => (
                 <div key={m.label}>
                   <div className="flex justify-between items-center mb-1.5">

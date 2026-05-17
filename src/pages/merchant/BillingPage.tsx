@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Check, AlertTriangle, CreditCard, Download, Zap, BarChart2, Bell } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { redirectToCheckout, redirectToCustomerPortal } from '../../lib/stripe'
+import { supabase } from '../../lib/supabase'
 
 type PlanSection = { sectionTitle: string }
 type PlanItem = string | PlanSection
@@ -52,12 +53,6 @@ const BUSINESS_FEATURES: PlanItem[] = [
   'Formation équipes si nécessaire',
 ]
 
-// Faux historique de paiements pour la démo
-const FAKE_INVOICES = [
-  { date: '01 mai 2026', amount: '59,99€', status: 'payé', id: 'INV-2026-05' },
-  { date: '01 avr. 2026', amount: '59,99€', status: 'payé', id: 'INV-2026-04' },
-  { date: '01 mars 2026', amount: '59,99€', status: 'payé', id: 'INV-2026-03' },
-]
 
 function ProgressBar({ label, value, max, color }: { label: string; value: number; max: number | null; color: string }) {
   const pct = max ? Math.min((value / max) * 100, 100) : 0
@@ -91,6 +86,25 @@ export default function BillingPage() {
   const toast = useToast()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [loadingPortal, setLoadingPortal] = useState(false)
+  const [invoices, setInvoices] = useState<Array<{id: string; date: string; amount: string; status: string; url?: string}>>([])
+  const [kpis, setKpis] = useState({ totalCustomers: 0, stampsThisMonth: 0 })
+
+  useEffect(() => {
+    if (!merchant?.id || !hasActivePlan) return
+    supabase.functions.invoke('get-stripe-invoices', { body: { merchant_id: merchant.id } })
+      .then(({ data }) => {
+        if (data?.invoices) setInvoices(data.invoices)
+      })
+      .catch(() => {})
+  }, [merchant?.id, hasActivePlan])
+
+  useEffect(() => {
+    if (!merchant?.id) return
+    supabase.rpc('get_merchant_kpis', { p_merchant_id: merchant.id })
+      .then(({ data }) => {
+        if (data?.success) setKpis({ totalCustomers: data.total_clients || 0, stampsThisMonth: data.stamps_month || 0 })
+      })
+  }, [merchant?.id])
 
   const daysLeft = (() => {
     if (!merchant?.trial_ends_at) return 0
@@ -104,8 +118,8 @@ export default function BillingPage() {
 
   const isTrial = merchant?.subscription_status === 'trial'
   const isExpired = merchant?.subscription_status === 'expired' || merchant?.subscription_status === 'cancelled'
-  const hasActivePlan = merchant?.subscription_status === 'pro' || merchant?.subscription_status === 'business'
-  const isBusiness = merchant?.subscription_status === 'business'
+  const hasActivePlan = merchant?.subscription_status === 'active'
+  const isBusiness = false  // pas de plan Business dans la DB pour l'instant
 
   const handleCheckout = async (planId: string) => {
     if (!merchant?.id) return
@@ -211,8 +225,8 @@ export default function BillingPage() {
             <h2 className="font-display text-slate-900 text-base">Utilisation ce mois</h2>
           </div>
           <div className="space-y-6">
-            <ProgressBar label="Clients actifs" value={247} max={isBusiness ? null : 500} color="linear-gradient(90deg, #2563EB, #7C3AED)" />
-            <ProgressBar label="Tampons distribués" value={1482} max={null} color="linear-gradient(90deg, #10B981, #059669)" />
+            <ProgressBar label="Clients actifs" value={kpis.totalCustomers} max={isBusiness ? null : 500} color="linear-gradient(90deg, #2563EB, #7C3AED)" />
+            <ProgressBar label="Tampons distribués" value={kpis.stampsThisMonth} max={null} color="linear-gradient(90deg, #10B981, #059669)" />
             <ProgressBar label="Campagnes push envoyées" value={12} max={isBusiness ? null : 20} color="linear-gradient(90deg, #F59E0B, #D97706)" />
           </div>
         </div>
@@ -352,58 +366,66 @@ export default function BillingPage() {
 
           {/* Desktop */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Montant</th>
-                  <th className="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Statut</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Facture</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {FAKE_INVOICES.map(inv => (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-700">{inv.date}</td>
-                    <td className="px-5 py-4 text-sm font-bold text-slate-900">{inv.amount}</td>
-                    <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Payé
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => toast.info('Téléchargement disponible bientôt')}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-fydly-500 hover:text-fydly-700 transition-colors"
-                      >
-                        <Download size={13} />
-                        PDF
-                      </button>
-                    </td>
+            {invoices.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">Aucune facture disponible</div>
+            ) : (
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                    <th className="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Montant</th>
+                    <th className="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Statut</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Facture</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {invoices.map(inv => (
+                    <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-semibold text-slate-700">{inv.date}</td>
+                      <td className="px-5 py-4 text-sm font-bold text-slate-900">{inv.amount}</td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Payé
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => inv.url ? window.open(inv.url, '_blank') : toast.info('Téléchargement disponible bientôt')}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-fydly-500 hover:text-fydly-700 transition-colors"
+                        >
+                          <Download size={13} />
+                          PDF
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Mobile */}
           <div className="sm:hidden divide-y divide-slate-50">
-            {FAKE_INVOICES.map(inv => (
-              <div key={inv.id} className="flex items-center justify-between p-5">
-                <div>
-                  <div className="text-sm font-bold text-slate-900">{inv.amount}</div>
-                  <div className="text-xs text-slate-400 font-medium mt-0.5">{inv.date}</div>
+            {invoices.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">Aucune facture disponible</div>
+            ) : (
+              invoices.map(inv => (
+                <div key={inv.id} className="flex items-center justify-between p-5">
+                  <div>
+                    <div className="text-sm font-bold text-slate-900">{inv.amount}</div>
+                    <div className="text-xs text-slate-400 font-medium mt-0.5">{inv.date}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Payé
+                    </span>
+                    <button onClick={() => inv.url ? window.open(inv.url, '_blank') : toast.info('Bientôt disponible')} className="text-fydly-500">
+                      <Download size={16} />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Payé
-                  </span>
-                  <button onClick={() => toast.info('Bientôt disponible')} className="text-fydly-500">
-                    <Download size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}

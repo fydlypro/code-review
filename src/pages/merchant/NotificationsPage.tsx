@@ -25,6 +25,22 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [message, setMessage] = useState('')
   const [segment, setSegment] = useState<Segment>('all')
+  const [segmentCounts, setSegmentCounts] = useState({ all: 0, active: 0, inactive: 0, premium: 0 })
+
+  useEffect(() => {
+    if (!merchant?.id) return
+    supabase
+      .from('loyalty_cards')
+      .select('last_scan_at')
+      .eq('merchant_id', merchant.id)
+      .then(({ data }) => {
+        if (!data) return
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        const active = data.filter(c => c.last_scan_at && c.last_scan_at >= thirtyDaysAgo).length
+        const inactive = data.filter(c => !c.last_scan_at || c.last_scan_at < thirtyDaysAgo).length
+        setSegmentCounts({ all: data.length, active, inactive, premium: 0 })
+      })
+  }, [merchant?.id])
 
   useEffect(() => {
     if (merchant?.id) loadNotifications()
@@ -197,7 +213,7 @@ export default function NotificationsPage() {
                       segment === s.key ? s.color : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                     }`}
                   >
-                    {s.label}
+                    {s.label} · {segmentCounts[s.key]}
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${segment === s.key ? 'bg-white/20' : 'bg-slate-100 text-slate-400'}`}>
                       {s.desc}
                     </span>

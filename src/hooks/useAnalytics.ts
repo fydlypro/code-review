@@ -106,13 +106,8 @@ export function useAnalytics(merchantId: string | undefined, _rewardThreshold: n
         t => t.created_at >= startOfPrevMonth && t.created_at <= endOfPrevMonth
       ).length
 
-      // Return rate: clients with 2+ earn transactions in last 30d / total clients
-      const recentEarns = earnTx.filter(t => t.created_at >= thirtyDaysAgo)
-      const visitsByCustomer: Record<string, number> = {}
-      recentEarns.forEach(t => {
-        visitsByCustomer[t.customer_id] = (visitsByCustomer[t.customer_id] || 0) + 1
-      })
-      const returningCount = Object.values(visitsByCustomer).filter(v => v >= 2).length
+      // Return rate (lifetime): clients ayant total_earned >= 2 / total clients
+      const returningCount = loyaltyCards.filter(c => c.total_earned >= 2).length
       const returnRate = totalClients > 0 ? Math.round((returningCount / totalClients) * 100) : 0
 
       // Notification performance: visits within 48h after sending
@@ -176,6 +171,24 @@ export function useAnalytics(merchantId: string | undefined, _rewardThreshold: n
         event: 'UPDATE',
         schema: 'public',
         table: 'loyalty_cards',
+        filter: `merchant_id=eq.${merchantId}`,
+      }, invalidate)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'rewards',
+        filter: `merchant_id=eq.${merchantId}`,
+      }, invalidate)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'rewards',
+        filter: `merchant_id=eq.${merchantId}`,
+      }, invalidate)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
         filter: `merchant_id=eq.${merchantId}`,
       }, invalidate)
       .subscribe()

@@ -178,12 +178,12 @@ export default function MerchantSupportPage() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <a
-                href="mailto:support@fydly.app?subject=Support commerçant Fydly"
+                href="mailto:fydlypro@gmail.com?subject=Support commerçant Fydly"
                 className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm text-white border border-white/20 hover:bg-white/10 transition-all"
                 style={{ minHeight: 44 }}
               >
                 <Mail size={15} />
-                support@fydly.app
+                fydlypro@gmail.com
               </a>
               <a
                 href="https://wa.me/33789483883?text=Bonjour, je suis commerçant sur Fydly."
