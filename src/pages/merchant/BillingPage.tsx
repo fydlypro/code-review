@@ -89,6 +89,11 @@ export default function BillingPage() {
   const [invoices, setInvoices] = useState<Array<{id: string; date: string; amount: string; status: string; url?: string}>>([])
   const [kpis, setKpis] = useState({ totalCustomers: 0, stampsThisMonth: 0 })
 
+  const isTrial = merchant?.subscription_status === 'trial'
+  const isExpired = merchant?.subscription_status === 'expired' || merchant?.subscription_status === 'cancelled'
+  const hasActivePlan = merchant?.subscription_status === 'pro' || merchant?.subscription_status === 'business'
+  const isBusiness = merchant?.subscription_status === 'business'
+
   useEffect(() => {
     if (!merchant?.id || !hasActivePlan) return
     supabase.functions.invoke('get-stripe-invoices', { body: { merchant_id: merchant.id } })
@@ -115,11 +120,6 @@ export default function BillingPage() {
   const trialEndDate = merchant?.trial_ends_at
     ? new Date(merchant.trial_ends_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
     : ''
-
-  const isTrial = merchant?.subscription_status === 'trial'
-  const isExpired = merchant?.subscription_status === 'expired' || merchant?.subscription_status === 'cancelled'
-  const hasActivePlan = merchant?.subscription_status === 'active'
-  const isBusiness = false  // pas de plan Business dans la DB pour l'instant
 
   const handleCheckout = async (planId: string) => {
     if (!merchant?.id) return
