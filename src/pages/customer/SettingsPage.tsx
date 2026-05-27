@@ -186,14 +186,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-      <button
-        style={{
-          width: '100%', marginTop: 12, padding: '13px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: '#2563EB', color: '#fff', fontSize: 14, fontWeight: 700
-        }}
-      >
-        Enregistrer
-      </button>
 
       {/* SECTION NOTIFICATIONS */}
       <p style={{ fontSize: 11, fontWeight: 700, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: 20, marginBottom: 8 }}>
@@ -273,12 +265,12 @@ export default function SettingsPage() {
       </p>
       <div style={{ background: '#fff', borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
         {[
-          { label: 'Mes données (export RGPD)' },
-          { label: 'Politique de confidentialité' },
-          { label: "Conditions d'utilisation" },
+          { label: 'Politique de confidentialité', href: '/privacy' },
+          { label: "Conditions d'utilisation", href: '/terms' },
         ].map((item, i, arr) => (
           <button
             key={item.label}
+            onClick={() => navigate(item.href)}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',

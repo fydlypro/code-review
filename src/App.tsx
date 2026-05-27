@@ -62,7 +62,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
             <div className="text-4xl mb-4">⚠️</div>
             <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Une erreur est survenue</h1>
             <p className="text-slate-500 text-sm mb-4">L'application a rencontré un problème inattendu.</p>
-            {this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <p className="text-red-500 text-xs bg-red-50 rounded-lg p-3 mb-4 text-left font-mono break-all">
                 {this.state.error.message}
               </p>

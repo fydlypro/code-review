@@ -26,9 +26,6 @@ function Sparkline({ color = '#2563EB' }: { color?: string }) {
   )
 }
 
-// ─── Period filter ───────────────────────────────────────────────────────────
-type Period = '7j' | '30j' | '3m'
-
 export default function MerchantDashboard() {
   const { merchant } = useAuth()
   const toast = useToast()
@@ -39,7 +36,6 @@ export default function MerchantDashboard() {
   const [qrFullscreen, setQrFullscreen] = useState(false)
   const [timeLeft, setTimeLeft] = useState('')
   const [timePercent, setTimePercent] = useState(100)
-  const [period, setPeriod] = useState<Period>('30j')
   const [kpis, setKpis] = useState({
     totalCustomers: 0,
     stampsThisMonth: 0,
@@ -335,6 +331,7 @@ export default function MerchantDashboard() {
       }
 
       notifyRewardValidated(
+        merchant.id,
         pendingReward.customer_id,
         merchant.reward_description || 'votre récompense'
       )
@@ -363,12 +360,14 @@ export default function MerchantDashboard() {
         status: 'failed',
         sent_at: new Date().toISOString(),
       })
+      toast.error(result.error)
+      return
     }
 
     if (result.recipients > 0) {
       toast.success(`Notification envoyée à ${result.recipients} client${result.recipients > 1 ? 's' : ''} !`)
     } else {
-      toast.success('Notification enregistrée !')
+      toast.success('Notification enregistrée (aucun client avec les push activés).')
     }
   }
 
@@ -597,22 +596,6 @@ export default function MerchantDashboard() {
           <h2 className="font-display font-bold text-slate-900 text-[16px]">
             📊 Ce mois-ci
           </h2>
-          {/* Period filter */}
-          <div className="flex items-center gap-1 bg-slate-100 rounded-[10px] p-0.5">
-            {(['7j', '30j', '3m'] as Period[]).map(p => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-3 py-1 rounded-[8px] text-[12px] font-semibold transition-all ${
-                  period === p
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* 4 KPI cards */}
@@ -629,9 +612,6 @@ export default function MerchantDashboard() {
               <div className="w-8 h-8 rounded-[8px] bg-blue-50 flex items-center justify-center text-fydly-500">
                 <Users size={15} />
               </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold font-mono">
-                +12% ↑
-              </span>
             </div>
             <div className="font-mono font-bold text-[32px] text-slate-900 leading-none tracking-tight mt-2">
               {kpis.totalCustomers}
@@ -649,9 +629,6 @@ export default function MerchantDashboard() {
               <div className="w-8 h-8 rounded-[8px] bg-violet-50 flex items-center justify-center text-violet-500">
                 <Zap size={15} />
               </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold font-mono">
-                +8% ↑
-              </span>
             </div>
             <div className="font-mono font-bold text-[32px] text-slate-900 leading-none tracking-tight mt-2">
               {kpis.stampsThisMonth}
@@ -670,9 +647,6 @@ export default function MerchantDashboard() {
               <div className="w-8 h-8 rounded-[8px] bg-amber-50 flex items-center justify-center text-amber-500">
                 <Gift size={15} />
               </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold font-mono">
-                +5 ↑
-              </span>
             </div>
             <div className="font-mono font-bold text-[32px] text-slate-900 leading-none tracking-tight mt-2">
               {kpis.rewardsThisMonth}
@@ -693,9 +667,11 @@ export default function MerchantDashboard() {
               <div className="w-8 h-8 rounded-[8px] bg-red-50 flex items-center justify-center text-red-500">
                 <AlertTriangle size={15} />
               </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold font-mono">
-                urgent
-              </span>
+              {kpis.inactiveCustomers > 5 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold font-mono">
+                  urgent
+                </span>
+              )}
             </div>
             <div className="font-mono font-bold text-[32px] text-slate-900 leading-none tracking-tight mt-2">
               {kpis.inactiveCustomers}

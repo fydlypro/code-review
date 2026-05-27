@@ -81,12 +81,13 @@ serve(async (req: Request) => {
 
     const rewards = expiredRewards as unknown as ExpiredReward[];
 
-    // 2. Marquer les récompenses comme expirées
+    // 2. Marquer les récompenses comme expirées (seulement celles encore "available" — évite TOCTOU)
     const expiredIds = rewards.map((r) => r.id);
     const { error: updateError } = await supabase
       .from("rewards")
       .update({ status: "expired" })
-      .in("id", expiredIds);
+      .in("id", expiredIds)
+      .eq("status", "available");
 
     if (updateError) throw updateError;
 

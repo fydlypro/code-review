@@ -81,7 +81,7 @@ export default function MerchantLayout() {
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">{merchant.name}</p>
                 <span className="inline-block mt-1 text-[10px] font-semibold text-fydly-500 bg-fydly-50 px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                  {merchant.subscription_status === 'trial' ? 'Essai' : 'Pro'}
+                  {merchant.subscription_status === 'trial' ? 'Essai' : merchant.subscription_status === 'expired' || merchant.subscription_status === 'cancelled' ? 'Expiré' : merchant.subscription_status === 'business' ? 'Business' : 'Pro'}
                 </span>
               </div>
             </div>

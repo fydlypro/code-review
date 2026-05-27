@@ -287,7 +287,7 @@ export default function AnalyticsPage() {
 
     return {
       newClients: pctDelta(data.newClientsThisMonth, data.newClientsPrevMonth),
-      returnRate: `${data.returnRate}%`,
+      returnRate: `${data.returnRate > 0 ? '+' : ''}${data.returnRate}%`,
       visits: pctDelta(data.totalVisitsThisMonth, data.totalVisitsPrevMonth),
       rewards: `${data.rewardsRedeemedThisMonth > 0 ? '+' : ''}${data.rewardsRedeemedThisMonth}`,
     }

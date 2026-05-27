@@ -430,12 +430,13 @@ export default function MerchantLogin() {
               <div className="flex-1 h-px bg-slate-200" />
             </div>
 
-            {/* Boutons sociaux */}
-            <div className="space-y-3">
+            {/* Boutons sociaux — bientôt disponible */}
+            <div className="space-y-3 opacity-50 pointer-events-none">
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 rounded-[14px] text-slate-700 font-semibold text-sm hover:border-slate-300 hover:bg-slate-50 transition-all"
+                className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 rounded-[14px] text-slate-700 font-semibold text-sm"
                 style={{ height: '48px' }}
+                disabled
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -443,18 +444,19 @@ export default function MerchantLogin() {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
-                Continuer avec Google
+                Google — bientôt
               </button>
 
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-3 bg-slate-900 rounded-[14px] text-white font-semibold text-sm hover:bg-slate-800 transition-all"
+                className="w-full flex items-center justify-center gap-3 bg-slate-900 rounded-[14px] text-white font-semibold text-sm"
                 style={{ height: '48px' }}
+                disabled
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.32.05 2.24.72 3.01.74.98-.2 1.93-.89 2.98-.78 1.28.14 2.22.66 2.85 1.6-2.56 1.44-1.93 4.55.47 5.43-.56 1.5-1.28 2.95-2.31 3.89zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
-                Continuer avec Apple
+                Apple — bientôt
               </button>
             </div>
 

@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle()
 
       if (error) throw error
-      if (data) setMerchant(data)
+      setMerchant(data)
     } catch (err) {
       // Silently fail — profil commerçant non chargé
     }
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle()
 
       if (error) throw error
-      if (data) setCustomer(data)
+      setCustomer(data)
     } catch (err) {
       // Silently fail — profil client non chargé
     }

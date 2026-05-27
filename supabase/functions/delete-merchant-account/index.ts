@@ -5,6 +5,7 @@
 // ============================================================
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Stripe from "https://esm.sh/stripe@14.5.0?target=deno";
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   const appUrl = Deno.env.get("APP_URL") ?? "https://fydly.vercel.app";
@@ -44,6 +45,33 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Récupérer le merchant pour annuler Stripe avant suppression
+    const { data: merchant } = await adminClient
+      .from("merchants")
+      .select("stripe_subscription_id")
+      .eq("user_id", user.id)
+      .single();
+
+    // Annuler l'abonnement Stripe s'il existe
+    if (merchant?.stripe_subscription_id) {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (stripeKey) {
+        try {
+          const stripe = new Stripe(stripeKey, { apiVersion: "2024-04-10", httpClient: Stripe.createFetchHttpClient() });
+          await stripe.subscriptions.cancel(merchant.stripe_subscription_id);
+        } catch (stripeErr) {
+          console.error("[delete-merchant-account] Erreur annulation Stripe:", stripeErr);
+        }
+      }
+    }
+
+    // Supprimer le compte auth EN PREMIER (plus facile de recréer un profil merchant si besoin)
+    const { error: deleteAuthErr } = await adminClient.auth.admin.deleteUser(user.id);
+    if (deleteAuthErr) {
+      console.error("[delete-merchant-account] Erreur suppression auth:", deleteAuthErr);
+      throw deleteAuthErr;
+    }
+
     // Supprimer le profil merchant (CASCADE supprime qr_tokens, loyalty_cards, transactions, rewards, notifications)
     const { error: deleteMerchantErr } = await adminClient
       .from("merchants")
@@ -52,14 +80,6 @@ serve(async (req: Request) => {
 
     if (deleteMerchantErr) {
       console.error("[delete-merchant-account] Erreur suppression merchant:", deleteMerchantErr);
-      throw deleteMerchantErr;
-    }
-
-    // Supprimer le compte auth
-    const { error: deleteAuthErr } = await adminClient.auth.admin.deleteUser(user.id);
-    if (deleteAuthErr) {
-      console.error("[delete-merchant-account] Erreur suppression auth:", deleteAuthErr);
-      throw deleteAuthErr;
     }
 
     return new Response(

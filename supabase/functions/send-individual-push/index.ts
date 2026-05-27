@@ -74,19 +74,29 @@ serve(async (req: Request) => {
       );
     }
 
-    // Vérifier que l'utilisateur est propriétaire du merchant
-    const { data: merchant, error: merchantError } = await supabaseAdmin
+    // Auth : soit le merchant owner, soit le customer lui-même
+    const { data: merchant } = await supabaseAdmin
       .from("merchants")
       .select("id")
       .eq("id", merchant_id)
       .eq("user_id", userId)
       .single();
 
-    if (merchantError || !merchant) {
-      return new Response(JSON.stringify({ error: "Commerçant introuvable ou accès refusé" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!merchant) {
+      // Pas le merchant owner — vérifier si c'est le customer qui s'envoie une notif à lui-même
+      const { data: selfCustomer } = await supabaseAdmin
+        .from("customers")
+        .select("id")
+        .eq("id", customer_id)
+        .eq("user_id", userId)
+        .single();
+
+      if (!selfCustomer) {
+        return new Response(JSON.stringify({ error: "Accès refusé" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Vérifier que le client appartient bien à ce merchant
@@ -98,7 +108,7 @@ serve(async (req: Request) => {
       .single();
 
     if (loyaltyError || !loyaltyCard) {
-      return new Response(JSON.stringify({ error: "Client introuvable ou accès refusé" }), {
+      return new Response(JSON.stringify({ error: "Client introuvable pour ce commerçant" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

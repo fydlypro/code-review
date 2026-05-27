@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 
 interface StampAnimationProps {
@@ -8,17 +8,19 @@ interface StampAnimationProps {
 
 export default function StampAnimation({ show, onComplete }: StampAnimationProps) {
   const [isVisible, setIsVisible] = useState(show);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (show) {
       setIsVisible(true);
       const timer = setTimeout(() => {
         setIsVisible(false);
-        if (onComplete) onComplete();
+        onCompleteRef.current?.();
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [show, onComplete]);
+  }, [show]);
 
   if (!isVisible) return null;
 

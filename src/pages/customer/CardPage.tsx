@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase, LoyaltyCard, Merchant, Reward } from '../../lib/supabase'
 import { isPushEnabled, requestNotificationPermission, registerOneSignalPlayer } from '../../lib/onesignal'
-import { Sparkles, Scan, Bell, X, Loader2, Zap, Star, QrCode } from 'lucide-react'
+import { Sparkles, Scan, Bell, X, Loader2, Zap, Star } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 
 const NOTIF_PROMPT_KEY = 'fydly_notif_prompt_dismissed'
 
@@ -89,7 +90,7 @@ export default function CardPage() {
         .rpc('get_customer_loyalty_cards')
 
       if (cardsError) throw cardsError
-      setCards((cardsData as PopulatedCard[] || []))
+      setCards((cardsData ?? []) as PopulatedCard[])
 
       const { data: rewardsData, error: rewardsError } = await supabase
         .from('rewards')
@@ -220,7 +221,8 @@ export default function CardPage() {
     )
   }
 
-  const activeCard = cards[activeCardIndex]
+  const safeIndex = Math.min(activeCardIndex, cards.length - 1)
+  const activeCard = cards[safeIndex]
   const merchantReward = rewards.find(r => r.merchant_id === activeCard.merchant_id)
   const earned = activeCard.balance
   const total = activeCard.merchants.reward_threshold
@@ -483,7 +485,7 @@ export default function CardPage() {
       {/* REWARD OVERLAY */}
       {showReward && (
         <div style={{
-          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
           zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
         }}>
@@ -507,13 +509,17 @@ export default function CardPage() {
 
             {/* QR Code zone */}
             <div style={{
-              width: 160, height: 160, margin: '0 auto 12px', border: '2px solid #e2e8f0',
+              width: 176, height: 176, margin: '0 auto 12px', border: '2px solid #e2e8f0',
               borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', color: '#cbd5e1'
+              justifyContent: 'center', padding: 8
             }}>
-              <QrCode size={80} style={{ color: '#0f172a' }} />
+              <QRCodeSVG
+                value={`reward:${showReward.id}`}
+                size={156}
+                level="H"
+              />
             </div>
-            <p style={{ fontSize: 11, color: '#cbd5e1', marginBottom: 12 }}>
+            <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
               Montrez ce QR Code au commerçant
             </p>
 

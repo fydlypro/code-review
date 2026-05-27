@@ -140,17 +140,25 @@ serve(async (req: Request) => {
 
     const customerIds = loyaltyCards.map((lc: { customer_id: string }) => lc.customer_id);
 
-    const { data: customers, error: customersError } = await supabaseAdmin
-      .from("customers")
-      .select("onesignal_player_id")
-      .in("id", customerIds)
-      .not("onesignal_player_id", "is", null);
+    // Paginate customer fetch to avoid Supabase default 1000-row limit
+    const allPlayers: string[] = [];
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < customerIds.length; i += BATCH_SIZE) {
+      const batch = customerIds.slice(i, i + BATCH_SIZE);
+      const { data: customers, error: customersError } = await supabaseAdmin
+        .from("customers")
+        .select("onesignal_player_id")
+        .in("id", batch)
+        .not("onesignal_player_id", "is", null);
 
-    if (customersError) throw customersError;
+      if (customersError) throw customersError;
 
-    const playerIds = (customers ?? [])
-      .map((c: { onesignal_player_id: string | null }) => c.onesignal_player_id)
-      .filter((id): id is string => !!id);
+      for (const c of customers ?? []) {
+        if (c.onesignal_player_id) allPlayers.push(c.onesignal_player_id);
+      }
+    }
+
+    const playerIds = allPlayers;
 
     let notificationId: string | null = null;
     let recipientsCount = 0;

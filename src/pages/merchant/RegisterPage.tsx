@@ -379,7 +379,7 @@ export default function MerchantRegister() {
       toast.error("Code d'accès professionnel invalide.")
       return
     }
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.confirmPassword && formData.password !== formData.confirmPassword) {
       toast.error('Les mots de passe ne correspondent pas.')
       return
     }

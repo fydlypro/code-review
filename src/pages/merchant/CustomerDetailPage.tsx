@@ -104,7 +104,7 @@ export default function CustomerDetailPage() {
       })
       if (tErr) console.error('[handleValidateReward] Échec insertion transaction:', tErr)
 
-      notifyRewardValidated(data.customer!.id, merchant.reward_description || 'votre récompense')
+      notifyRewardValidated(merchant.id, data.customer!.id, merchant.reward_description || 'votre récompense')
       toast.success('Récompense validée avec succès !')
       loadCustomerData()
     } catch (e: any) {
@@ -119,7 +119,7 @@ export default function CustomerDetailPage() {
     setSendingNotif(true)
     try {
       const { error: pushError } = await supabase.functions.invoke('send-individual-push', {
-        body: { customer_id: data.customer.id, message: notifMessage.trim(), type: 'personal_message' },
+        body: { merchant_id: merchant.id, customer_id: data.customer.id, message: notifMessage.trim(), type: 'personal_message' },
       })
       const { error: dbError } = await supabase.from('notifications').insert({
         merchant_id: merchant.id,

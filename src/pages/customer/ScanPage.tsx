@@ -66,7 +66,7 @@ export default function Scan() {
         }
 
         if (stampRes.rewardUnlocked && customer?.id) {
-          notifyRewardUnlocked(customer.id, res.merchantName || 'votre commerce', stampRes.rewardDescription || 'votre récompense')
+          notifyRewardUnlocked(mId, customer.id, res.merchantName || 'votre commerce', stampRes.rewardDescription || 'votre récompense')
         }
 
         navigate(`/customer/card?merchant=${mId}&new_stamp=true`)
@@ -79,8 +79,10 @@ export default function Scan() {
     }
   }, [session, customer, navigate])
 
+  const urlProcessedRef = useRef(false)
   useEffect(() => {
-    if (tokenParam && merchantParam && !authLoading) {
+    if (tokenParam && merchantParam && !authLoading && !urlProcessedRef.current) {
+      urlProcessedRef.current = true
       processScannedQR(tokenParam, merchantParam)
     }
   }, [tokenParam, merchantParam, authLoading, processScannedQR])

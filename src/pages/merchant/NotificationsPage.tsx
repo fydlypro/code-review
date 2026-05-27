@@ -67,24 +67,11 @@ export default function NotificationsPage() {
     if (!message.trim() || !merchant?.id) return
     setSending(true)
     try {
-      const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
+      const { data: pushData, error: pushError } = await supabase.functions.invoke('send-push-notification', {
         body: { merchant_id: merchant.id, message: message.trim(), segment },
       })
-      const { data: countData } = await supabase
-        .from('loyalty_cards')
-        .select('id', { count: 'exact' })
-        .eq('merchant_id', merchant.id)
-      const { error: dbError } = await supabase.from('notifications').insert({
-        merchant_id: merchant.id,
-        message: message.trim(),
-        segment,
-        recipients_count: countData?.length || 0,
-        status: pushError ? 'failed' : 'sent',
-        sent_at: new Date().toISOString(),
-      })
-      if (dbError) throw dbError
       if (pushError) toast.error('Envoi partiel — vérifiez votre configuration OneSignal.')
-      else toast.success('Campagne envoyée avec succès !')
+      else toast.success(`Campagne envoyée à ${pushData?.recipients ?? 0} client(s) !`)
       setMessage('')
       loadNotifications()
     } catch {
