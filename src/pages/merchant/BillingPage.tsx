@@ -91,7 +91,7 @@ export default function BillingPage() {
 
   const isTrial = merchant?.subscription_status === 'trial'
   const isExpired = merchant?.subscription_status === 'expired' || merchant?.subscription_status === 'cancelled'
-  const hasActivePlan = merchant?.subscription_status === 'active' || merchant?.subscription_status === 'pro' || merchant?.subscription_status === 'business'
+  const hasActivePlan = merchant?.subscription_status === 'pro' || merchant?.subscription_status === 'business'
   const isBusiness = merchant?.subscription_status === 'business'
 
   useEffect(() => {
