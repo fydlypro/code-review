@@ -129,17 +129,15 @@ export async function registerOneSignalPlayer(customerId: string): Promise<void>
   const OneSignal = getOS();
   if (!OneSignal) return;
 
-  if (typeof Notification !== "undefined" && Notification.permission !== "granted") {
-    console.log("[OneSignal] Permission non accordée — pas d'enregistrement.");
+  if (typeof Notification !== "undefined" && Notification.permission === "denied") {
+    console.log("[OneSignal] Permission refusée — pas d'enregistrement.");
     return;
   }
 
   try {
-    // Attendre que le SDK soit prêt — borné à 15s pour éviter une boucle infinie
-    // si le SDK ne charge jamais (adblock, erreur réseau).
     await new Promise<void>((resolve) => {
       let attempts = 0;
-      const MAX_ATTEMPTS = 50; // 50 × 300ms = 15s
+      const MAX_ATTEMPTS = 50;
       const check = () => {
         if (OneSignal.User?.PushSubscription !== undefined) {
           resolve();
@@ -156,14 +154,13 @@ export async function registerOneSignalPlayer(customerId: string): Promise<void>
 
     let subscriptionId: string | undefined = OneSignal.User?.PushSubscription?.id;
 
-    if (!subscriptionId) {
-      console.log("[OneSignal] Pas de subscription — tentative optIn() et attente APNs (iOS peut prendre 30s)...");
+    if (!subscriptionId && Notification.permission === "granted") {
+      console.log("[OneSignal] Permission accordée mais pas de subscription — tentative optIn()...");
       try {
         await OneSignal.User?.PushSubscription?.optIn();
       } catch {
         // optIn peut échouer si déjà en cours
       }
-      // iOS prend parfois 20-30s pour le handshake APNs — attendre jusqu'à 45s
       for (let i = 0; i < 150; i++) {
         subscriptionId = OneSignal.User?.PushSubscription?.id;
         if (subscriptionId) break;
@@ -171,23 +168,36 @@ export async function registerOneSignalPlayer(customerId: string): Promise<void>
       }
     }
 
-    if (!subscriptionId) {
-      console.log("[OneSignal] Toujours pas de subscription après 45s — abandon.");
+    if (subscriptionId) {
+      await savePlayerIdForCustomer(customerId, subscriptionId);
       return;
     }
 
-    const { error } = await supabase
-      .from("customers")
-      .update({ onesignal_player_id: subscriptionId })
-      .eq("id", customerId);
-
-    if (error) {
-      console.error("[OneSignal] Erreur mise à jour player_id:", error);
-    } else {
-      console.log(`[OneSignal] Subscription ID enregistré pour customer ${customerId}:`, subscriptionId);
-    }
+    // Permission "default" — écouter le changement de subscription pour sauvegarder plus tard
+    const onChange = async (event: any) => {
+      const id: string | undefined = event.current?.id;
+      if (id) {
+        await savePlayerIdForCustomer(customerId, id);
+        OneSignal.User?.PushSubscription?.removeEventListener("change", onChange);
+      }
+    };
+    OneSignal.User?.PushSubscription?.addEventListener("change", onChange);
+    console.log("[OneSignal] En attente de la permission — listener installé pour customer", customerId);
   } catch (err) {
     console.error("[OneSignal] Erreur registerOneSignalPlayer:", err);
+  }
+}
+
+async function savePlayerIdForCustomer(customerId: string, subscriptionId: string): Promise<void> {
+  const { error } = await supabase
+    .from("customers")
+    .update({ onesignal_player_id: subscriptionId })
+    .eq("id", customerId);
+
+  if (error) {
+    console.error("[OneSignal] Erreur mise à jour player_id:", error);
+  } else {
+    console.log(`[OneSignal] Subscription ID enregistré pour customer ${customerId}:`, subscriptionId);
   }
 }
 
