@@ -282,6 +282,7 @@ export default function OnboardingPage() {
         .upsert({
           user_id: session.user.id,
           name: shopName.trim(),
+          sector: sector || null,
           program_type: programType,
           reward_threshold: thresholdValue,
           reward_description: rewardDescription,
