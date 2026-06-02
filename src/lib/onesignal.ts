@@ -56,66 +56,29 @@ export async function initOneSignal(): Promise<void> {
   if (_oneSignalInitialized) return;
   _oneSignalInitialized = true;
 
-  const appId = import.meta.env.VITE_ONESIGNAL_APP_ID;
-
-  if (!appId || appId === "VOTRE_ONESIGNAL_APP_ID") {
-    console.warn("[OneSignal] VITE_ONESIGNAL_APP_ID non configuré — notifications désactivées.");
-    return;
-  }
-
-  const safariWebId = import.meta.env.VITE_ONESIGNAL_SAFARI_WEB_ID;
-
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(async (OneSignal: any) => {
-    try {
-      const initConfig: Record<string, any> = {
-        appId,
-        serviceWorkerPath: "/sw.js",
-        serviceWorkerUpdaterPath: "/sw.js",
-        serviceWorkerParam: { scope: "/" },
-        autoResubscribe: true,
-        allowLocalhostAsSecureOrigin: import.meta.env.DEV,
-        promptOptions: {
-          slidedown: {
-            prompts: [{
-              type: "push",
-              autoPrompt: false,
-              text: {
-                actionMessage: "Fydly souhaite vous envoyer des notifications pour vos récompenses et offres.",
-                acceptButton: "Activer",
-                cancelButton: "Non merci",
-              },
-            }],
-          },
-        },
-      };
+  window.OneSignalDeferred.push(async function(OneSignal: any) {
+    await OneSignal.init({
+      appId: import.meta.env.VITE_ONESIGNAL_APP_ID,
+      safari_web_id: import.meta.env.VITE_ONESIGNAL_SAFARI_WEB_ID,
+      notifyButton: { enable: false },
+      allowLocalhostAsSecureOrigin: true,
+    });
 
-      if (safariWebId && safariWebId !== "VOTRE_ONESIGNAL_SAFARI_WEB_ID") {
-        initConfig.safari_web_id = safariWebId;
-      }
+    console.log("[OneSignal] SDK v16 initialisé.");
 
-      await OneSignal.init(initConfig);
-
-      console.log("[OneSignal] SDK v16 initialisé.");
-
-      // Sauvegarder le subscription ID si déjà abonné (retour utilisateur)
-      const currentId: string | undefined = OneSignal.User?.PushSubscription?.id;
-      if (currentId) {
-        await autoSaveSubscriptionId(currentId);
-      }
-
-      // Listener unique — le guard _oneSignalInitialized garantit qu'il n'est
-      // enregistré qu'une seule fois, évitant les doublons de writes en DB.
-      const onSubscriptionChange = async (event: any) => {
-        const id: string | undefined = event.current?.id;
-        if (id) {
-          await autoSaveSubscriptionId(id);
-        }
-      };
-      OneSignal.User?.PushSubscription?.addEventListener("change", onSubscriptionChange);
-    } catch (err) {
-      console.error("[OneSignal] Erreur d'initialisation:", err);
+    const currentId = OneSignal.User?.PushSubscription?.id;
+    if (currentId) {
+      await autoSaveSubscriptionId(currentId);
     }
+
+    const onSubscriptionChange = async (event: any) => {
+      const id = event.current?.id;
+      if (id) {
+        await autoSaveSubscriptionId(id);
+      }
+    };
+    OneSignal.User?.PushSubscription?.addEventListener("change", onSubscriptionChange);
   });
 }
 
@@ -129,60 +92,19 @@ export async function registerOneSignalPlayer(customerId: string): Promise<void>
   const OneSignal = getOS();
   if (!OneSignal) return;
 
-  if (typeof Notification !== "undefined" && Notification.permission === "denied") {
-    console.log("[OneSignal] Permission refusée — pas d'enregistrement.");
-    return;
-  }
-
   try {
-    await new Promise<void>((resolve) => {
-      let attempts = 0;
-      const MAX_ATTEMPTS = 50;
-      const check = () => {
-        if (OneSignal.User?.PushSubscription !== undefined) {
-          resolve();
-        } else if (attempts >= MAX_ATTEMPTS) {
-          console.warn("[OneSignal] SDK PushSubscription non disponible après 15s — abandon.");
-          resolve();
-        } else {
-          attempts++;
-          setTimeout(check, 300);
-        }
-      };
-      setTimeout(check, 300);
-    });
-
-    let subscriptionId: string | undefined = OneSignal.User?.PushSubscription?.id;
-
-    if (!subscriptionId && Notification.permission === "granted") {
-      console.log("[OneSignal] Permission accordée mais pas de subscription — tentative optIn()...");
-      try {
-        await OneSignal.User?.PushSubscription?.optIn();
-      } catch {
-        // optIn peut échouer si déjà en cours
-      }
-      for (let i = 0; i < 150; i++) {
-        subscriptionId = OneSignal.User?.PushSubscription?.id;
-        if (subscriptionId) break;
-        await new Promise<void>((resolve) => setTimeout(resolve, 300));
-      }
+    const playerId = await OneSignal.User.PushSubscription.id;
+    if (playerId) {
+      await savePlayerIdForCustomer(customerId, playerId);
     }
 
-    if (subscriptionId) {
-      await savePlayerIdForCustomer(customerId, subscriptionId);
-      return;
-    }
-
-    // Permission "default" — écouter le changement de subscription pour sauvegarder plus tard
     const onChange = async (event: any) => {
-      const id: string | undefined = event.current?.id;
+      const id = event.current?.id;
       if (id) {
         await savePlayerIdForCustomer(customerId, id);
-        OneSignal.User?.PushSubscription?.removeEventListener("change", onChange);
       }
     };
     OneSignal.User?.PushSubscription?.addEventListener("change", onChange);
-    console.log("[OneSignal] En attente de la permission — listener installé pour customer", customerId);
   } catch (err) {
     console.error("[OneSignal] Erreur registerOneSignalPlayer:", err);
   }
@@ -210,42 +132,11 @@ async function savePlayerIdForCustomer(customerId: string, subscriptionId: strin
  * L'enregistrement du player ID se fait ensuite via registerOneSignalPlayer().
  */
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (typeof Notification === "undefined" || !("Notification" in window)) {
-    console.warn("[OneSignal] API Notification non disponible.");
-    return false;
-  }
-
-  if (Notification.permission === "denied") {
-    console.warn("[OneSignal] Permission déjà refusée dans les réglages système.");
-    return false;
-  }
-
   const OneSignal = getOS();
-
-  // Déjà opt-in → succès immédiat
-  if (OneSignal?.User?.PushSubscription?.optedIn) {
-    return true;
-  }
+  if (!OneSignal) return false;
 
   try {
-    if (Notification.permission !== "granted") {
-      // Appel natif direct pour afficher le dialog iOS/Android.
-      // NE PAS utiliser OneSignal.Notifications.requestPermission() car il ne
-      // déclenche pas le dialog système Apple et peut bloquer indéfiniment.
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        console.log("[OneSignal] Permission refusée par l'utilisateur.");
-        return false;
-      }
-    }
-
-    // Permission accordée — déclencher l'opt-in OneSignal en arrière-plan.
-    // On ne l'attend PAS ici car sur iOS cela peut prendre 10-30s (handshake APNs).
-    // registerOneSignalPlayer() sera appelé ensuite avec un timeout plus généreux.
-    if (OneSignal) {
-      OneSignal.User?.PushSubscription?.optIn().catch(() => {});
-    }
-
+    await OneSignal.Notifications.requestPermission();
     return true;
   } catch (err) {
     console.error("[OneSignal] Erreur requestNotificationPermission:", err);
