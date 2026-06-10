@@ -137,7 +137,16 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
   try {
     await OneSignal.Notifications.requestPermission();
-    return true;
+    // Vérifier la permission réellement accordée — si l'OS a mémorisé un refus,
+    // requestPermission() ne montre aucun prompt et ne lève aucune erreur.
+    const granted =
+      OneSignal.Notifications?.permission === true ||
+      (typeof Notification !== "undefined" && Notification.permission === "granted");
+    if (granted) {
+      // Force la création de la subscription (nécessaire si opt-out précédent)
+      await OneSignal.User?.PushSubscription?.optIn?.();
+    }
+    return granted;
   } catch (err) {
     console.error("[OneSignal] Erreur requestNotificationPermission:", err);
     return false;
