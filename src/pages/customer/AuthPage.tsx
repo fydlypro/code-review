@@ -24,7 +24,7 @@ export default function Auth() {
 
   const scanContext = !!urlToken
 
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  const handleOAuth = async (provider: 'google') => {
     try {
       const redirectTarget = (urlToken && urlMerchantId)
         ? `/scan?token=${urlToken}&m=${urlMerchantId}`
@@ -256,20 +256,6 @@ export default function Auth() {
                 <path fill="none" d="M0 0h48v48H0z"/>
               </svg>
               <span className="text-slate-900 font-semibold text-sm">Continuer avec Google</span>
-            </button>
-
-            {/* OAuth Apple */}
-            <button
-              type="button"
-              onClick={() => handleOAuth('apple')}
-              className="w-full flex justify-center items-center gap-3 bg-slate-900 text-white rounded-btn active:scale-[0.98] transition-all duration-200"
-              style={{ height: 50 }}
-            >
-              {/* Apple SVG logo */}
-              <svg width="18" height="18" viewBox="0 0 814 1000" aria-hidden="true" fill="white">
-                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.3-151.7-97.8C40.7 787.9 0 666.6 0 549.8 0 329.8 141.5 214.5 280.8 214.5c69.4 0 127.2 45.6 170.5 45.6 42 0 107.9-48.2 186.7-48.2 30 0 108.2 2.6 168.5 80zm-87.9-227.6c37.9-44.2 65.5-107.2 65.5-170.1 0-8.9-.6-17.9-2-26.2C699.9 27.3 631 66.9 591 111.5c-34.6 39.4-69.4 102.5-69.4 167.5 0 9.6.9 18.8 2.6 27.2 3.9.6 9.9 1.3 15.9 1.3 54.5 0 119.7-36.6 160-93.2z"/>
-              </svg>
-              <span className="font-semibold text-sm">Continuer avec Apple</span>
             </button>
 
             {/* Séparateur */}
