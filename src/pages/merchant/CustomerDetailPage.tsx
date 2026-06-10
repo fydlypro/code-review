@@ -118,19 +118,11 @@ export default function CustomerDetailPage() {
     if (!notifMessage.trim() || !merchant?.id || !data.customer?.id) return
     setSendingNotif(true)
     try {
-      const { error: pushError } = await supabase.functions.invoke('send-individual-push', {
+      // L'historique est enregistré côté serveur par l'Edge Function (RLS bloque l'insert client)
+      const { data: pushData, error: pushError } = await supabase.functions.invoke('send-individual-push', {
         body: { merchant_id: merchant.id, customer_id: data.customer.id, message: notifMessage.trim(), type: 'personal_message' },
       })
-      const { error: dbError } = await supabase.from('notifications').insert({
-        merchant_id: merchant.id,
-        message: notifMessage.trim(),
-        segment: 'all',
-        recipients_count: 1,
-        status: pushError ? 'failed' : 'sent',
-        sent_at: new Date().toISOString(),
-      })
-      if (dbError) throw dbError
-      if (pushError) toast.error("Notification non reçue — le client n'a peut-être pas activé les push.")
+      if (pushError || !pushData?.sent) toast.error("Notification non reçue — le client n'a peut-être pas activé les push.")
       else toast.success('Message envoyé à ' + data.customer.first_name)
       setShowNotifModal(false)
       setNotifMessage('')
