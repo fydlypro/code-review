@@ -7,7 +7,6 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useAnalytics } from '../../hooks/useAnalytics'
 import { sendPushNotification } from '../../lib/onesignal'
-import { supabase } from '../../lib/supabase'
 import Button from '../../components/ui/Button'
 import SkeletonLoader from '../../components/ui/SkeletonLoader'
 
@@ -86,29 +85,39 @@ function KpiCard({
 }: {
   label: string
   value: string
-  delta: string
+  delta?: string
   accent: string
   icon: React.ElementType
   sparkColor: string
-  sparkBars: number[]
+  sparkBars?: number[]
 }) {
+  // Normalise les valeurs réelles en hauteurs de barres (4-34px)
+  const bars = (() => {
+    if (!sparkBars || sparkBars.length === 0) return []
+    const max = Math.max(...sparkBars)
+    if (max === 0) return []
+    return sparkBars.map(v => 4 + (v / max) * 30)
+  })()
+
   return (
     <div
       className="relative bg-white rounded-[14px] p-5 overflow-hidden shadow-card"
       style={{ borderLeft: `3px solid ${accent}` }}
     >
-      {/* Sparkline SVG en fond-droit */}
-      <svg
-        className="absolute bottom-0 right-0 opacity-20"
-        width="72"
-        height="40"
-        viewBox="0 0 72 40"
-        aria-hidden="true"
-      >
-        {sparkBars.map((h, i) => (
-          <rect key={i} x={i * 14 + 2} y={40 - h} width="10" height={h} rx="3" fill={sparkColor} />
-        ))}
-      </svg>
+      {/* Sparkline SVG en fond-droit (données réelles, masquée si aucune activité) */}
+      {bars.length > 0 && (
+        <svg
+          className="absolute bottom-0 right-0 opacity-20"
+          width="72"
+          height="40"
+          viewBox="0 0 72 40"
+          aria-hidden="true"
+        >
+          {bars.map((h, i) => (
+            <rect key={i} x={i * 14 + 2} y={40 - h} width="10" height={h} rx="3" fill={sparkColor} />
+          ))}
+        </svg>
+      )}
 
       <div className="flex items-start justify-between mb-3 relative">
         <div
@@ -117,7 +126,7 @@ function KpiCard({
         >
           <Icon size={18} style={{ color: accent }} />
         </div>
-        <DeltaPill delta={delta} />
+        {delta != null && <DeltaPill delta={delta} />}
       </div>
 
       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[1.5px] mb-1 relative">{label}</p>
@@ -146,17 +155,14 @@ function NotifModal({
     if (!message.trim() || !merchant) return
     setSending(true)
     try {
+      // L'historique est enregistré côté serveur par l'Edge Function
       const result = await sendPushNotification(merchant.id, defaultSegment, message)
-      await supabase.from('notifications').insert({
-        merchant_id: merchant.id,
-        message,
-        segment: defaultSegment,
-        recipients_count: result.recipients,
-        status: result.success ? 'sent' : 'failed',
-        sent_at: new Date().toISOString(),
-      })
-      toast.success('Message envoyé !')
-      onClose()
+      if (result.success) {
+        toast.success(`Message envoyé à ${result.recipients} client(s) !`)
+        onClose()
+      } else {
+        toast.error(result.error || "Erreur lors de l'envoi.")
+      }
     } catch {
       toast.error("Erreur lors de l'envoi.")
     } finally {
@@ -247,8 +253,11 @@ export default function AnalyticsPage() {
       if (slotIdx >= 0 && slotIdx < 6) grid[slotIdx][dayIdx]++
     })
 
-    // normalize to 0-5 scale
-    const maxVal = Math.max(1, ...grid.flat())
+    // Aucune visite sur les créneaux 8h-20h : pas de pic/creux à afficher
+    const maxVal = Math.max(...grid.flat())
+    if (maxVal === 0) {
+      return { grid, peak: null, quiet: null }
+    }
     const normalized = grid.map(row => row.map(v => Math.round((v / maxVal) * 5)))
 
     let peakDay = 0, peakSlot = 0, peakCount = -1
@@ -275,9 +284,9 @@ export default function AnalyticsPage() {
     return data.transactions.filter(t => t.type === 'earn' && t.created_at >= cutoff).length
   }, [data, timeFilter])
 
-  // ── Deltas mois sur mois ─────────────────────────────────────────────────────
+  // ── Deltas mois sur mois (réels — comparaison avec le mois précédent) ───────
   const deltas = useMemo(() => {
-    if (!data) return { newClients: '—', returnRate: '—', visits: '—', rewards: '—' }
+    if (!data) return { newClients: undefined, visits: undefined, rewards: undefined }
 
     const pctDelta = (curr: number, prev: number) => {
       if (prev === 0) return curr > 0 ? '+100%' : '0%'
@@ -285,11 +294,37 @@ export default function AnalyticsPage() {
       return `${d >= 0 ? '+' : ''}${d}%`
     }
 
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
+    const redeemTx = data.transactions.filter(t => t.type === 'redeem')
+    const redeemsThisMonth = redeemTx.filter(t => t.created_at >= startOfMonth).length
+    const redeemsPrevMonth = redeemTx.filter(
+      t => t.created_at >= startOfPrevMonth && t.created_at < startOfMonth
+    ).length
+
     return {
       newClients: pctDelta(data.newClientsThisMonth, data.newClientsPrevMonth),
-      returnRate: `${data.returnRate > 0 ? '+' : ''}${data.returnRate}%`,
       visits: pctDelta(data.totalVisitsThisMonth, data.totalVisitsPrevMonth),
-      rewards: `${data.rewardsRedeemedThisMonth > 0 ? '+' : ''}${data.rewardsRedeemedThisMonth}`,
+      rewards: pctDelta(redeemsThisMonth, redeemsPrevMonth),
+    }
+  }, [data])
+
+  // ── Sparklines (5 dernières semaines, données réelles) ──────────────────────
+  const sparks = useMemo(() => {
+    if (!data) return { newClients: [], visits: [], rewards: [] }
+    const weekBuckets = Array.from({ length: 5 }, (_, i) => {
+      const to = new Date(); to.setDate(to.getDate() - (4 - i) * 7)
+      const from = new Date(to); from.setDate(from.getDate() - 7)
+      return { from: from.toISOString(), to: to.toISOString() }
+    })
+    const countIn = (dates: string[]) =>
+      weekBuckets.map(({ from, to }) => dates.filter(d => d >= from && d < to).length)
+
+    return {
+      newClients: countIn(data.loyaltyCards.map(c => c.created_at)),
+      visits: countIn(data.transactions.filter(t => t.type === 'earn').map(t => t.created_at)),
+      rewards: countIn(data.transactions.filter(t => t.type === 'redeem').map(t => t.created_at)),
     }
   }, [data])
 
@@ -380,9 +415,8 @@ export default function AnalyticsPage() {
       ? Math.floor((Date.now() - new Date(data.lastNotificationDate).getTime()) / 86400000)
       : 999
     const notifPts = lastNotifDays <= 7 ? 20 : lastNotifDays <= 14 ? 15 : lastNotifDays <= 30 ? 10 : 0
-    // 1 récompense = 5 pts, plafonné à 20 (4+ récompenses = score max)
-    const totalRewards = (data.rewardsRedeemedThisMonth ?? 0) +
-      Math.floor((data.transactions?.filter(t => t.type === 'redeem').length ?? 0) / 2)
+    // 1 récompense offerte (90 derniers jours) = 5 pts, plafonné à 20
+    const totalRewards = data.transactions?.filter(t => t.type === 'redeem').length ?? 0
     const rewardPts = Math.min(20, totalRewards * 5)
 
     return {
@@ -438,16 +472,29 @@ export default function AnalyticsPage() {
       })
     }
 
-    recs.push({
-      icon: '⭐',
-      bg: 'bg-violet-50',
-      border: 'border-violet-100',
-      text: 'Score à améliorer : activez les notifications push',
-      action: () => setNotifModal({ message: 'Bonjour ! On vous attend avec plaisir 😊', segment: 'all' }),
-    })
+    // Uniquement si la communication est réellement le point faible (aucune notif < 30j)
+    if (scoreData.notifPts === 0) {
+      recs.push({
+        icon: '⭐',
+        bg: 'bg-violet-50',
+        border: 'border-violet-100',
+        text: 'Score à améliorer : envoyez une notification à vos clients',
+        action: () => setNotifModal({ message: 'Bonjour ! On vous attend avec plaisir 😊', segment: 'all' }),
+      })
+    }
+
+    if (recs.length === 0) {
+      recs.push({
+        icon: '✅',
+        bg: 'bg-emerald-50',
+        border: 'border-emerald-100',
+        text: 'Tout est au vert — continuez comme ça !',
+        action: undefined,
+      })
+    }
 
     return recs.slice(0, 4)
-  }, [data, heatmap])
+  }, [data, heatmap, scoreData.notifPts])
 
   // ── Error state ──────────────────────────────────────────────────────────────
   if (error) {
@@ -568,16 +615,14 @@ export default function AnalyticsPage() {
               accent="#2563EB"
               icon={UserPlus}
               sparkColor="#2563EB"
-              sparkBars={[8, 14, 10, 20, 16]}
+              sparkBars={sparks.newClients}
             />
             <KpiCard
               label="Taux de fidélité"
               value={`${data?.returnRate ?? 0}%`}
-              delta={deltas.returnRate}
               accent="#059669"
               icon={Heart}
               sparkColor="#059669"
-              sparkBars={[12, 18, 14, 22, 19]}
             />
             <KpiCard
               label="Passages ce mois"
@@ -586,7 +631,7 @@ export default function AnalyticsPage() {
               accent="#7C3AED"
               icon={Activity}
               sparkColor="#7C3AED"
-              sparkBars={[16, 10, 24, 16, 28]}
+              sparkBars={sparks.visits}
             />
             <KpiCard
               label="Récompenses offertes"
@@ -595,7 +640,7 @@ export default function AnalyticsPage() {
               accent="#D97706"
               icon={Gift}
               sparkColor="#D97706"
-              sparkBars={[6, 12, 9, 18, 15]}
+              sparkBars={sparks.rewards}
             />
           </div>
         )}
@@ -615,9 +660,6 @@ export default function AnalyticsPage() {
               </span>
             </div>
           </div>
-          <button className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-[12px] font-semibold px-3 py-2 rounded-[10px] border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0">
-            Exporter
-          </button>
         </div>
 
         {/* SVG Area Chart */}
@@ -756,8 +798,8 @@ export default function AnalyticsPage() {
             <div className="flex-1 w-full space-y-4">
               {[
                 { label: 'Fidélité', pct: data?.returnRate ?? 0 },
-                { label: 'Engagement', pct: Math.round((scoreData.notifPts / 20) * 100) },
-                { label: 'Satisfaction', pct: Math.round(((scoreData.growthPts + scoreData.rewardPts) / 40) * 100) },
+                { label: 'Communication', pct: Math.round((scoreData.notifPts / 20) * 100) },
+                { label: 'Croissance & récompenses', pct: Math.round(((scoreData.growthPts + scoreData.rewardPts) / 40) * 100) },
               ].map(m => (
                 <div key={m.label}>
                   <div className="flex justify-between items-center mb-1.5">
@@ -801,10 +843,6 @@ export default function AnalyticsPage() {
                 </button>
               ))}
             </div>
-
-            <button className="mt-4 w-full flex items-center justify-center gap-2 text-slate-500 hover:text-slate-900 text-[13px] font-semibold py-3 rounded-[12px] border border-slate-200 hover:bg-slate-50 transition-all">
-              Voir toutes les recommandations
-            </button>
           </>
         )}
       </section>
