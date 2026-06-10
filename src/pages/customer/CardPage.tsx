@@ -64,7 +64,7 @@ export default function CardPage() {
     const timer = setTimeout(async () => {
       const enabled = await isPushEnabled()
       if (!enabled) setShowNotifBanner(true)
-    }, 4000)
+    }, 1000)
 
     return () => clearTimeout(timer)
   }, [customer])
