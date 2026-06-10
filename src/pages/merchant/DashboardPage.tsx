@@ -351,15 +351,8 @@ export default function MerchantDashboard() {
 
     const result = await sendPushNotification(merchant.id, segment, message)
 
+    // L'historique (succès comme échec) est enregistré côté serveur par l'Edge Function
     if (!result.success && result.error) {
-      await supabase.from('notifications').insert({
-        merchant_id: merchant.id,
-        message,
-        segment,
-        recipients_count: 0,
-        status: 'failed',
-        sent_at: new Date().toISOString(),
-      })
       toast.error(result.error)
       return
     }

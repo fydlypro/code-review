@@ -42,6 +42,15 @@ serve(async (req: Request) => {
       { auth: { persistSession: false } }
     );
 
+    // 0. Expirer les essais terminés (aucun autre mécanisme ne le fait)
+    const { error: expireError } = await supabase
+      .from("merchants")
+      .update({ subscription_status: "expired", updated_at: new Date().toISOString() })
+      .eq("subscription_status", "trial")
+      .lt("trial_ends_at", new Date().toISOString());
+
+    if (expireError) console.error("[rotate-qr-tokens] Erreur expiration essais:", expireError);
+
     // 1. Désactiver tous les tokens actifs de la veille
     const { error: deactivateError } = await supabase
       .from("qr_tokens")
@@ -51,11 +60,11 @@ serve(async (req: Request) => {
 
     if (deactivateError) throw deactivateError;
 
-    // 2. Récupérer tous les commerçants actifs (trial ou active)
+    // 2. Récupérer tous les commerçants actifs (essai en cours ou abonnés)
     const { data: merchants, error: merchantsError } = await supabase
       .from("merchants")
       .select("id, name")
-      .in("subscription_status", ["trial", "active"]);
+      .in("subscription_status", ["trial", "active", "pro", "business"]);
 
     if (merchantsError) throw merchantsError;
     if (!merchants || merchants.length === 0) {
