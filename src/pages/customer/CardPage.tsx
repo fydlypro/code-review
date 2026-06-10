@@ -20,7 +20,7 @@ function isIOSSafariWithoutPWA(): boolean {
 type PopulatedCard = LoyaltyCard & { merchants: Pick<Merchant, 'name' | 'reward_threshold' | 'reward_description' | 'sector'> }
 
 export default function CardPage() {
-  const { customer } = useAuth()
+  const { customer, session, loading: authLoading, ensureCustomerProfile } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const confettiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -46,6 +46,14 @@ export default function CardPage() {
     if (!customer?.id) return
     loadData()
   }, [customer?.id])
+
+  // Après une connexion OAuth (Google), le profil client n'existe pas encore : on le crée.
+  const ensureTriedRef = useRef(false)
+  useEffect(() => {
+    if (authLoading || customer || !session || ensureTriedRef.current) return
+    ensureTriedRef.current = true
+    ensureCustomerProfile()
+  }, [authLoading, customer, session, ensureCustomerProfile])
 
   useEffect(() => {
     if (!customer?.id) return

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
-import { supabase, Merchant, Customer } from '../lib/supabase'
+import { supabase, Merchant, Customer, upsertCustomerProfile } from '../lib/supabase'
 import { Navigate, useLocation } from 'react-router-dom'
 import { registerOneSignalPlayer } from '../lib/onesignal'
 
@@ -15,6 +15,7 @@ interface AuthContextType {
   isAdmin: boolean
   refreshMerchant: () => Promise<void>
   refreshCustomer: () => Promise<void>
+  ensureCustomerProfile: () => Promise<Customer | null>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   refreshMerchant: async () => {},
   refreshCustomer: async () => {},
+  ensureCustomerProfile: async () => null,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -90,6 +92,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const id = currentSession?.user?.id || session?.user?.id
     if (id) {
       await fetchCustomer(id)
+    }
+  }
+
+  /**
+   * Crée le profil client s'il n'existe pas encore.
+   * Nécessaire après une connexion OAuth (Google) : contrairement au flux
+   * email/mot de passe, aucune ligne `customers` n'est créée côté AuthPage.
+   * Ne fait rien pour un compte commerçant.
+   */
+  const ensureCustomerProfile = async (): Promise<Customer | null> => {
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession()
+      const u = s?.user
+      if (!u?.email) return null
+
+      const { data: existing } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('user_id', u.id)
+        .maybeSingle()
+      if (existing) {
+        setCustomer(existing)
+        return existing as Customer
+      }
+
+      // Un compte commerçant ne doit pas recevoir de profil client
+      const { data: merchantRow } = await supabase
+        .from('merchants')
+        .select('id')
+        .eq('user_id', u.id)
+        .maybeSingle()
+      if (merchantRow) return null
+
+      const meta = u.user_metadata ?? {}
+      const firstName: string | undefined =
+        meta.given_name || (typeof meta.full_name === 'string' ? meta.full_name.split(' ')[0] : undefined) || (typeof meta.name === 'string' ? meta.name.split(' ')[0] : undefined)
+
+      const { data: created, error } = await upsertCustomerProfile({
+        userId: u.id,
+        email: u.email,
+        firstName,
+      })
+      if (error || !created) return null
+      setCustomer(created)
+      return created
+    } catch {
+      return null
     }
   }
 
@@ -191,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin: session?.user?.app_metadata?.role === 'admin',
       refreshMerchant,
       refreshCustomer,
+      ensureCustomerProfile,
     }}>
       {children}
     </AuthContext.Provider>

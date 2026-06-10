@@ -13,7 +13,7 @@ export default function Scan() {
   const tokenParam = searchParams.get('token')
   const merchantParam = searchParams.get('m')
 
-  const { session, customer, loading: authLoading } = useAuth()
+  const { session, customer, loading: authLoading, ensureCustomerProfile } = useAuth()
 
   const [isScanning, setIsScanning] = useState(!tokenParam)
   const [isProcessing, setIsProcessing] = useState(!!tokenParam)
@@ -45,9 +45,12 @@ export default function Scan() {
       sessionStorage.setItem('fydly_pending_merchant_id', mId)
       if (res.merchantName) sessionStorage.setItem('fydly_pending_merchant_name', res.merchantName)
 
-      if (session && customer) {
+      // Après une connexion OAuth (Google), le profil client peut ne pas encore exister
+      const effectiveCustomer = customer ?? (session ? await ensureCustomerProfile() : null)
+
+      if (session && effectiveCustomer) {
         const stampRes = await attributeStamp({
-          customerId: customer.id,
+          customerId: effectiveCustomer.id,
           merchantId: mId,
           qrTokenUsed: token
         })
@@ -65,8 +68,8 @@ export default function Scan() {
           return
         }
 
-        if (stampRes.rewardUnlocked && customer?.id) {
-          notifyRewardUnlocked(mId, customer.id, res.merchantName || 'votre commerce', stampRes.rewardDescription || 'votre récompense')
+        if (stampRes.rewardUnlocked && effectiveCustomer.id) {
+          notifyRewardUnlocked(mId, effectiveCustomer.id, res.merchantName || 'votre commerce', stampRes.rewardDescription || 'votre récompense')
         }
 
         navigate(`/customer/card?merchant=${mId}&new_stamp=true`)
@@ -77,7 +80,7 @@ export default function Scan() {
       setIsProcessing(false)
       setErrorInfo("Une erreur est survenue. Réessayez dans quelques instants.")
     }
-  }, [session, customer, navigate])
+  }, [session, customer, ensureCustomerProfile, navigate])
 
   const urlProcessedRef = useRef(false)
   useEffect(() => {
