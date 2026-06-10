@@ -63,6 +63,12 @@ export async function initOneSignal(): Promise<void> {
       safari_web_id: import.meta.env.VITE_ONESIGNAL_SAFARI_WEB_ID,
       notifyButton: { enable: false },
       allowLocalhostAsSecureOrigin: true,
+      // Le SW OneSignal est fusionné dans sw.js (importScripts) — sans ces
+      // paramètres, OneSignal enregistre OneSignalSDKWorker.js qui entre en
+      // conflit avec le SW de la PWA sur le scope "/" : la subscription
+      // n'est jamais créée même quand la permission est accordée.
+      serviceWorkerPath: "sw.js",
+      serviceWorkerParam: { scope: "/" },
     });
 
     console.log("[OneSignal] SDK v16 initialisé.");
