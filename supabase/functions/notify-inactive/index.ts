@@ -100,8 +100,9 @@ serve(async (req: Request) => {
           body: JSON.stringify({
             app_id: oneSignalAppId,
             include_subscription_ids: [playerId],
-            headings: { fr: merchantName },
-            contents: { fr: message },
+            // OneSignal exige une clé "en" (Any/English language content)
+            headings: { fr: merchantName, en: merchantName },
+            contents: { fr: message, en: message },
             data: { type: "auto_reminder", merchant_id: card.merchant_id },
           }),
         });
