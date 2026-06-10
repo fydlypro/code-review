@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
 import { supabase, LoyaltyCard, Merchant, Reward } from '../../lib/supabase'
 import { isPushEnabled, requestNotificationPermission, registerOneSignalPlayer } from '../../lib/onesignal'
 import { Sparkles, Scan, Bell, X, Loader2, Zap, Star } from 'lucide-react'
@@ -23,6 +24,7 @@ export default function CardPage() {
   const { customer, session, loading: authLoading, ensureCustomerProfile } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
+  const toast = useToast()
   const confettiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -74,13 +76,23 @@ export default function CardPage() {
     setNotifLoading(true)
     try {
       const granted = await requestNotificationPermission()
-      if (granted && customer?.id) {
-        registerOneSignalPlayer(customer.id).catch(() => {})
+      if (granted) {
+        if (customer?.id) registerOneSignalPlayer(customer.id).catch(() => {})
+        toast.success('Notifications activées !')
+        setShowNotifBanner(false)
+        localStorage.setItem(NOTIF_PROMPT_KEY, 'true')
+      } else if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+        // Refus mémorisé par l'OS : seule une réinstallation de la PWA (iOS)
+        // ou les réglages du navigateur peuvent le réinitialiser.
+        toast.error('Notifications bloquées par votre appareil. Supprimez Fydly de l\'écran d\'accueil puis réinstallez-le, ou autorisez-les dans les réglages.')
+        setShowNotifBanner(false)
+        localStorage.setItem(NOTIF_PROMPT_KEY, 'true')
+      } else {
+        toast.error("Activation refusée. Vous pourrez réessayer depuis Réglages → Notifications Push.")
+        setShowNotifBanner(false)
       }
     } finally {
-      setShowNotifBanner(false)
       setNotifLoading(false)
-      localStorage.setItem(NOTIF_PROMPT_KEY, 'true')
     }
   }
 
