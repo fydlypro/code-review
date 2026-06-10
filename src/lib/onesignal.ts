@@ -137,25 +137,48 @@ async function savePlayerIdForCustomer(customerId: string, subscriptionId: strin
  * la création de la subscription (qui peut prendre 10-20s sur iOS).
  * L'enregistrement du player ID se fait ensuite via registerOneSignalPlayer().
  */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`[OneSignal] timeout ${label} (${ms}ms)`)), ms)
+    ),
+  ]);
+}
+
 export async function requestNotificationPermission(): Promise<boolean> {
   const OneSignal = getOS();
-  if (!OneSignal) return false;
+  if (!OneSignal) {
+    console.error("[OneSignal] SDK non chargé (window.OneSignal absent)");
+    return false;
+  }
 
   try {
-    await OneSignal.Notifications.requestPermission();
+    // Timeout : le SDK peut rester suspendu indéfiniment si son init a échoué
+    await withTimeout(OneSignal.Notifications.requestPermission(), 15000, "requestPermission");
     // Vérifier la permission réellement accordée — si l'OS a mémorisé un refus,
     // requestPermission() ne montre aucun prompt et ne lève aucune erreur.
     const granted =
       OneSignal.Notifications?.permission === true ||
       (typeof Notification !== "undefined" && Notification.permission === "granted");
+    console.log("[OneSignal] permission accordée:", granted,
+      "| Notification.permission:", typeof Notification !== "undefined" ? Notification.permission : "n/a",
+      "| subscription id:", OneSignal.User?.PushSubscription?.id ?? null,
+      "| optedIn:", OneSignal.User?.PushSubscription?.optedIn ?? null);
     if (granted) {
-      // Force la création de la subscription (nécessaire si opt-out précédent)
-      await OneSignal.User?.PushSubscription?.optIn?.();
+      try {
+        // Force la création de la subscription (nécessaire si opt-out précédent)
+        await withTimeout(OneSignal.User?.PushSubscription?.optIn?.(), 15000, "optIn");
+      } catch (optErr) {
+        // La permission est accordée — la subscription peut arriver plus tard
+        // via le listener "change". On ne bloque pas l'UI pour autant.
+        console.error("[OneSignal] optIn n'a pas abouti:", optErr);
+      }
     }
     return granted;
   } catch (err) {
     console.error("[OneSignal] Erreur requestNotificationPermission:", err);
-    return false;
+    return typeof Notification !== "undefined" && Notification.permission === "granted";
   }
 }
 
