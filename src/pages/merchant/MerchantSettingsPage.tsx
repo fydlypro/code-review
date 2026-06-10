@@ -59,6 +59,7 @@ export default function MerchantSettingsPage() {
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('profil')
   const [loading, setLoading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   // Profil
   const [name, setName] = useState(merchant?.name || '')
@@ -133,11 +134,10 @@ export default function MerchantSettingsPage() {
     } catch { toast.error('Erreur de mise à jour.') } finally { setLoading(false) }
   }
 
+  // Modale custom : window.confirm est défaillant dans les PWA iOS en mode standalone
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      'Cette action est irréversible. Toutes vos données clients et historiques seront effacées définitivement. Confirmer ?'
-    )
-    if (!confirmed || !merchant?.id || !session?.user?.id) return
+    setShowDeleteModal(false)
+    if (!merchant?.id || !session?.user?.id) return
     setLoading(true)
     try {
       const { error } = await supabase.functions.invoke('delete-merchant-account')
@@ -553,7 +553,7 @@ export default function MerchantSettingsPage() {
                   </div>
                 </div>
                 <button
-                  onClick={handleDeleteAccount}
+                  onClick={() => setShowDeleteModal(true)}
                   disabled={loading}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold text-sm bg-red-600 hover:bg-red-700 shadow-md shadow-red-600/20 transition-all active:scale-95 disabled:opacity-60 shrink-0 w-full sm:w-auto justify-center"
                   style={{ minHeight: 44 }}
@@ -566,6 +566,33 @@ export default function MerchantSettingsPage() {
 
         </div>
       </div>
+
+      {/* MODALE DE CONFIRMATION SUPPRESSION */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h3 className="font-bold text-slate-900 text-lg mb-2">Fermer définitivement votre commerce ?</h3>
+            <p className="text-sm text-slate-500 leading-relaxed mb-6">
+              Cette action est irréversible. Toutes vos données clients, cartes de fidélité et historiques seront effacés définitivement.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors disabled:opacity-60"
+              >
+                {loading ? 'Suppression…' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
