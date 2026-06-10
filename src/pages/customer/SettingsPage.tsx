@@ -30,6 +30,7 @@ export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [notifLoading, setNotifLoading] = useState(false)
   const [loadingObj, setLoadingObj] = useState<Record<string, boolean>>({})
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const iosWithoutPWA = isIOSSafariWithoutPWA()
   const notifBlocked = typeof Notification !== "undefined" && Notification.permission === "denied"
 
@@ -88,9 +89,9 @@ export default function SettingsPage() {
     }
   }
 
+  // Modale custom : window.confirm est défaillant dans les PWA iOS en mode standalone
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm("Êtes-vous sûr ? Cette action supprimera définitivement vos cartes et tampons.")
-    if (!confirmed) return
+    setShowDeleteModal(false)
     try {
       setLoadingObj(prev => ({ ...prev, delete: true }))
       const { error } = await supabase.functions.invoke('delete-customer-account')
@@ -298,7 +299,7 @@ export default function SettingsPage() {
           </div>
         </div>
         <button
-          onClick={handleDeleteAccount}
+          onClick={() => setShowDeleteModal(true)}
           disabled={loadingObj.delete}
           style={{
             width: '100%', padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
@@ -308,6 +309,44 @@ export default function SettingsPage() {
           {loadingObj.delete ? "Suppression en cours…" : "Supprimer"}
         </button>
       </div>
+
+      {/* MODALE DE CONFIRMATION SUPPRESSION */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
+        }}>
+          <div style={{ background: '#fff', borderRadius: 20, padding: 24, width: '100%', maxWidth: 380 }}>
+            <p style={{ fontWeight: 700, fontSize: 16, color: '#0f172a', marginBottom: 8 }}>
+              Supprimer votre compte ?
+            </p>
+            <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5, marginBottom: 20 }}>
+              Cette action est irréversible : vos cartes de fidélité, tampons et récompenses seront définitivement supprimés.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: '1px solid #e2e8f0',
+                  background: '#fff', color: '#334155', fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={loadingObj.delete}
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#EF4444', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                {loadingObj.delete ? 'Suppression…' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* BOUTON DÉCONNEXION */}
       <button
