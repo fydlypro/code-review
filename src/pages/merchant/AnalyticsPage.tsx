@@ -11,7 +11,6 @@ import Button from '../../components/ui/Button'
 import SkeletonLoader from '../../components/ui/SkeletonLoader'
 
 type TimeFilter = '7d' | '30d' | '3m'
-type ActiveTab = 'overview' | 'frequentation' | 'horaires' | 'score' | 'recommendations'
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const SLOT_LABELS = ['8h', '10h', '12h', '14h', '16h', '18h']
@@ -220,7 +219,6 @@ function NotifModal({
 export default function AnalyticsPage() {
   const { merchant } = useAuth()
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('30d')
-  const [activeTab, setActiveTab] = useState<ActiveTab>('overview')
   const [notifModal, setNotifModal] = useState<{
     message: string
     segment: 'all' | 'active' | 'inactive'
@@ -514,14 +512,6 @@ export default function AnalyticsPage() {
     )
   }
 
-  const tabs: { id: ActiveTab; label: string }[] = [
-    { id: 'overview', label: 'Vue d\'ensemble' },
-    { id: 'frequentation', label: 'Fréquentation' },
-    { id: 'horaires', label: 'Horaires' },
-    { id: 'score', label: 'Score Fydly' },
-    { id: 'recommendations', label: 'Recommandations' },
-  ]
-
   return (
     <div className="space-y-6 pb-24 lg:pb-12 animate-fade-in">
       {notifModal && (
@@ -577,25 +567,6 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-
-        {/* ── TABS ────────────────────────────────────────────────────────────── */}
-        <nav className="overflow-x-auto scrollbar-hide -mb-1">
-          <div className="flex items-center gap-1.5 min-w-max pb-1">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-2 text-[13px] font-semibold rounded-[10px] whitespace-nowrap transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </nav>
       </div>
 
       {/* ── KPIs ────────────────────────────────────────────────────────────── */}
