@@ -110,9 +110,11 @@ serve(async (req: Request) => {
             body: JSON.stringify({
               app_id: oneSignalAppId,
               include_subscription_ids: [playerId],
-              headings: { fr: "Récompense expirée ⚠️" },
+              // OneSignal exige une clé "en" (Any/English language content)
+              headings: { fr: "Récompense expirée ⚠️", en: "Récompense expirée ⚠️" },
               contents: {
                 fr: `⚠️ Votre récompense chez ${merchantName} a expiré. Continuez à scanner pour en gagner une nouvelle !`,
+                en: `⚠️ Votre récompense chez ${merchantName} a expiré. Continuez à scanner pour en gagner une nouvelle !`,
               },
               data: {
                 type: "reward_expired",

@@ -120,7 +120,21 @@ serve(async (req: Request) => {
       .eq("id", customer_id)
       .single();
 
+    // Historique : insertion côté serveur (RLS bloque l'insert client sur notifications)
+    async function recordHistory(sent: boolean) {
+      if (type !== "personal_message") return;
+      await supabaseAdmin.from("notifications").insert({
+        merchant_id,
+        message,
+        segment: "all",
+        recipients_count: sent ? 1 : 0,
+        status: sent ? "sent" : "failed",
+        sent_at: new Date().toISOString(),
+      });
+    }
+
     if (!customer?.onesignal_player_id) {
+      await recordHistory(false);
       return new Response(
         JSON.stringify({ success: true, sent: false, reason: "Client sans player_id" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -147,6 +161,10 @@ serve(async (req: Request) => {
     });
 
     const oneSignalData = await oneSignalResponse.json();
+    if (!oneSignalResponse.ok) {
+      console.error("[send-individual-push] OneSignal error:", JSON.stringify(oneSignalData));
+    }
+    await recordHistory(oneSignalResponse.ok);
 
     return new Response(
       JSON.stringify({ success: true, sent: oneSignalResponse.ok, onesignal_id: oneSignalData.id ?? null }),
